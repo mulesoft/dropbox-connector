@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:spring="http://www.springframework.org/schema/beans"
+      xmlns:dropbox="http://www.mulesoft.org/schema/mule/dropbox"
+      xmlns:file="http://www.mulesoft.org/schema/mule/file"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                          http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
+                          http://www.mulesoft.org/schema/mule/dropbox http://www.mulesoft.org/schema/mule/dropbox/1.0-SNAPSHOT/mule-dropbox.xsd
+                          http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/3.1/mule-file.xsd
+                          http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/3.1/mule-http.xsd">
+
+
+    <!--
+         1. Ensure input dropbox folders are there, api is very picky about every detail. Upload is ok, creates on the fly.
+         2. MUST strip a leading '/' for dropbox paths, will handle that for the user later.
+    -->
+
+    <!--
+         This particular impl is GPL, but ok for the demo, can be replaced with a
+         generic code for distribution
+    -->
+    
+    <spring:bean name="largeThumbnailer" class="org.mule.demo.ThumbnailGenerator">
+        <spring:property name="width" value="400"/>
+        <spring:property name="height" value="400"/>
+    </spring:bean>
+
+    <spring:bean name="smallThumbnailer" class="org.mule.demo.ThumbnailGenerator">
+        <spring:property name="width" value="100"/>
+        <spring:property name="height" value="100"/>
+    </spring:bean>
+
+
+    <dropbox:config name="dropbox"
+                    userEmail="your dropbox login"
+                    userPassword="your dropbox password"
+                    appKey="in your dropbox account, 'create' a new dev app and put the key here"
+                    appSecret="in your dropbox account, 'create' a new dev app and put the password here"/>
+
+    <flow name="100x100">
+        <poll frequency="10000">
+            <dropbox:list config-ref="dropbox" dir="Misc/Thumbalicious/in/large"/>
+        </poll>
+        <collection-splitter/>
+        <message-properties-transformer>
+            <add-message-property key="size" value="large"/>
+        </message-properties-transformer>
+        <flow-ref name="thumbnailer"/>
+    </flow>
+
+    <flow name="50x50">
+        <poll frequency="10000">
+            <dropbox:list config-ref="dropbox" dir="Misc/Thumbalicious/in/small"/>
+        </poll>
+        <collection-splitter/>
+        <message-properties-transformer>
+            <add-message-property key="size" value="small"/>
+        </message-properties-transformer>
+        <flow-ref name="thumbnailer"/>
+    </flow>
+
+    <flow name="thumbnailer">
+        <message-properties-transformer>
+            <!--
+                The payload is a dropbox-rooted absolute file path,
+                split on / and grab the last one (actual filename)
+            -->
+            <add-message-property key="filename" value="#[groovy:payload.split('/')[-1]]"/>
+            <!-- Save the original path for the archive step at the end of the flow -->
+            <add-message-property key="fullPath" value="#[payload]"/>
+        </message-properties-transformer>
+        <dropbox:download-file path="#[payload]"/>
+        <logger level="INFO"/>
+        <choice>
+            <when expression="message.getOutboundProperty('size') == 'large'" evaluator="groovy">
+                <logger level="INFO" message="== Generating a large thumbnail"/>
+                <invoke object-ref="largeThumbnailer" method="createThumbnail" methodArguments="#[payload]"/>
+            </when>
+            <when expression="message.getOutboundProperty('size') == 'small'" evaluator="groovy">
+                <logger level="INFO" message="== Generating a small thumbnail"/>
+                <invoke object-ref="smallThumbnailer" method="createThumbnail" methodArguments="#[payload]"/>
+            </when>
+            <otherwise>
+                <!-- default to a large thumbnail -->
+                <logger level="INFO" message="== Generating a default(large) thumbnail"/>
+                <invoke object-ref="largeThumbnailer" method="createThumbnail" methodArguments="#[payload]"/>
+            </otherwise>
+        </choice>
+
+        <!--
+             Some more robust file naming patterns used below, optional
+        -->
+        <dropbox:upload-file config-ref="dropbox"
+                             path="Misc/Thumbalicious/out"
+                             filename="#[string:#[header:size]-#[header:filename]]"/>
+        <dropbox:move-file from="#[header:fullPath]"
+                           to="Misc/Thumbalicious/archive/#[function:uuid]-#[header:filename]"/>
+    </flow>
+</mule>
