@@ -17,7 +17,7 @@
             <property value="1" name="auxiliary;index"/>
         </properties>
     </global-element>
-    <flow SubFlow="false" name="Processor" entity-id="bc2c56d8-c681-4cea-af13-ee53e88b9930">
+    <flow SubFlow="false" name="Processor" entity-id="07057905-dff7-4a91-abef-e7ee3de9158f">
         <properties>
             <property name="processingStrategy2"/>
             <property name="processingStrategy"/>
@@ -98,35 +98,26 @@
                     <property value="7" name=";INDEX"/>
                     <property value="7" name=";INDEX"/>
                     <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property value="7" name=";INDEX"/>
-                    <property-collection name="bfc2f6c7-3c48-4349-855a-0cb146c738bf">
-                        <property value="true" name="choice.otherwise"/>
-                    </property-collection>
-                    <property-collection name="d30695d9-568c-4354-b608-034cdd925d11">
-                        <property value="#[payload.get('op') == 'list']" name="choice.expression"/>
-                    </property-collection>
-                    <property-collection name="e86c68cb-8d4d-4100-ab22-4ec9d15b1eb1">
-                        <property value="#[payload.get('op') == 'downFile']" name="choice.expression"/>
-                    </property-collection>
-                    <property-collection name="2e0d082d-7283-4e38-ae55-4e9069e7fc50">
-                        <property value="#[payload.get('op') == 'createF']" name="choice.expression"/>
-                    </property-collection>
-                    <property-collection name="b00c06af-a0fd-4972-bdd7-36ddca1ba807">
+                    <property-collection name="5a4ed8ff-cf4a-4673-a7e0-5c05bcc6711e">
                         <property value="#[payload.get('op') == 'move']" name="choice.expression"/>
                     </property-collection>
-                    <property-collection name="7b899a9b-1ac9-4fc9-9958-d5c381e867e1">
+                    <property-collection name="652bccb7-cec9-410e-aa6e-f8622c24c967">
+                        <property value="#[payload.get('op') == 'delete']" name="choice.expression"/>
+                    </property-collection>
+                    <property-collection name="78c00fcf-27f0-47b1-8e1f-62df0fd218c3">
                         <property value="#[payload.get('op') == 'upFile']" name="choice.expression"/>
                     </property-collection>
-                    <property-collection name="97707ee2-a4d4-49c8-82e8-4d72647eb1b3">
-                        <property value="#[payload.get('op') == 'delete']" name="choice.expression"/>
+                    <property-collection name="a6cf8203-74d7-460d-852e-516ee03c9e56">
+                        <property value="#[payload.get('op') == 'downFile']" name="choice.expression"/>
+                    </property-collection>
+                    <property-collection name="306089bc-ab80-4c94-a0c8-1a1260f62938">
+                        <property value="true" name="choice.otherwise"/>
+                    </property-collection>
+                    <property-collection name="83cde291-dbcc-4ce6-af7b-7178f0abcacd">
+                        <property value="#[payload.get('op') == 'list']" name="choice.expression"/>
+                    </property-collection>
+                    <property-collection name="b6069de0-4faa-4b5c-bd0e-01ec3e920ce2">
+                        <property value="#[payload.get('op') == 'createF']" name="choice.expression"/>
                     </property-collection>
                 </properties>
                 <pattern type="org.mule.tooling.ui.modules.core.pattern.cbr" name="Choice" entity-id="Choice#2">
@@ -134,40 +125,31 @@
                         <property value="7" name=";INDEX"/>
                         <property value="7" name=";INDEX"/>
                         <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property value="7" name=";INDEX"/>
-                        <property-collection name="bfc2f6c7-3c48-4349-855a-0cb146c738bf">
-                            <property value="true" name="choice.otherwise"/>
-                        </property-collection>
-                        <property-collection name="d30695d9-568c-4354-b608-034cdd925d11">
-                            <property value="#[payload.get('op') == 'list']" name="choice.expression"/>
-                        </property-collection>
-                        <property-collection name="e86c68cb-8d4d-4100-ab22-4ec9d15b1eb1">
-                            <property value="#[payload.get('op') == 'downFile']" name="choice.expression"/>
-                        </property-collection>
-                        <property-collection name="2e0d082d-7283-4e38-ae55-4e9069e7fc50">
-                            <property value="#[payload.get('op') == 'createF']" name="choice.expression"/>
-                        </property-collection>
-                        <property-collection name="b00c06af-a0fd-4972-bdd7-36ddca1ba807">
+                        <property-collection name="5a4ed8ff-cf4a-4673-a7e0-5c05bcc6711e">
                             <property value="#[payload.get('op') == 'move']" name="choice.expression"/>
                         </property-collection>
-                        <property-collection name="7b899a9b-1ac9-4fc9-9958-d5c381e867e1">
+                        <property-collection name="652bccb7-cec9-410e-aa6e-f8622c24c967">
+                            <property value="#[payload.get('op') == 'delete']" name="choice.expression"/>
+                        </property-collection>
+                        <property-collection name="78c00fcf-27f0-47b1-8e1f-62df0fd218c3">
                             <property value="#[payload.get('op') == 'upFile']" name="choice.expression"/>
                         </property-collection>
-                        <property-collection name="97707ee2-a4d4-49c8-82e8-4d72647eb1b3">
-                            <property value="#[payload.get('op') == 'delete']" name="choice.expression"/>
+                        <property-collection name="a6cf8203-74d7-460d-852e-516ee03c9e56">
+                            <property value="#[payload.get('op') == 'downFile']" name="choice.expression"/>
+                        </property-collection>
+                        <property-collection name="306089bc-ab80-4c94-a0c8-1a1260f62938">
+                            <property value="true" name="choice.otherwise"/>
+                        </property-collection>
+                        <property-collection name="83cde291-dbcc-4ce6-af7b-7178f0abcacd">
+                            <property value="#[payload.get('op') == 'list']" name="choice.expression"/>
+                        </property-collection>
+                        <property-collection name="b6069de0-4faa-4b5c-bd0e-01ec3e920ce2">
+                            <property value="#[payload.get('op') == 'createF']" name="choice.expression"/>
                         </property-collection>
                     </properties>
                 </pattern>
                 <compartment entity-id="compartment#1">
-                    <lane index="9" hadOnlyOneElement="false" entity-id="7b899a9b-1ac9-4fc9-9958-d5c381e867e1">
+                    <lane index="9" hadOnlyOneElement="false" entity-id="78c00fcf-27f0-47b1-8e1f-62df0fd218c3">
                         <pattern type="http://www.mulesoft.org/schema/mule/core/variable-transformer" name="Save input data" entity-id="Variable#1">
                             <properties>
 <property value="http://www.mulesoft.org/schema/mule/core/set-variable" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
@@ -214,216 +196,284 @@
 <property value="12" name="auxiliary;index"/>
                             </properties>
                         </pattern>
-                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="d073e0ee-e56b-4364-afa2-a53628b35e99"/>
+                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="Object to JSON#1">
+                            <properties>
+<property name="returnClass"/>
+<property name="ignoreBadInput"/>
+<property name="encoding"/>
+<property value="13" name="auxiliary;index"/>
+<property name="mimeType"/>
+<property value="13" name="auxiliary;index"/>
+<property value="13" name="auxiliary;index"/>
+<property name="mapper-ref"/>
+<property name="sourceClass"/>
+<property value="13" name="auxiliary;index"/>
+<property value="13" name="auxiliary;index"/>
+<property value="13" name="auxiliary;index"/>
+                            </properties>
+                        </pattern>
                     </lane>
-                    <lane index="14" hadOnlyOneElement="false" entity-id="2e0d082d-7283-4e38-ae55-4e9069e7fc50">
+                    <lane index="15" hadOnlyOneElement="false" entity-id="b6069de0-4faa-4b5c-bd0e-01ec3e920ce2">
                         <pattern type="http://www.mulesoft.org/schema/mule/dropbox/dropbox-connector" name="Create Folder" entity-id="Dropbox#3">
                             <properties>
 <property value="Dropbox" name="config-ref"/>
 <property value="http://www.mulesoft.org/schema/mule/dropbox/create-folder" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
 <property value="Dropbox" name="config-ref"/>
-<property value="15" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
 <property value="#[payload['dropboxPath']]" name="path"/>
-<property value="15" name="auxiliary;index"/>
-<property value="15" name="auxiliary;index"/>
-<property value="15" name="auxiliary;index"/>
-<property value="15" name="auxiliary;index"/>
-<property value="15" name="auxiliary;index"/>
-<property value="15" name="auxiliary;index"/>
-<property value="15" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
+<property value="16" name="auxiliary;index"/>
                             </properties>
                         </pattern>
-                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="ac22bb9a-4713-4829-a511-bc2502837b21"/>
+                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="Object to JSON#2">
+                            <properties>
+<property name="returnClass"/>
+<property name="ignoreBadInput"/>
+<property name="encoding"/>
+<property value="17" name="auxiliary;index"/>
+<property name="mimeType"/>
+<property value="17" name="auxiliary;index"/>
+<property value="17" name="auxiliary;index"/>
+<property name="mapper-ref"/>
+<property name="sourceClass"/>
+<property value="17" name="auxiliary;index"/>
+<property value="17" name="auxiliary;index"/>
+<property value="17" name="auxiliary;index"/>
+                            </properties>
+                        </pattern>
                     </lane>
-                    <lane index="17" hadOnlyOneElement="false" entity-id="97707ee2-a4d4-49c8-82e8-4d72647eb1b3">
+                    <lane index="19" hadOnlyOneElement="false" entity-id="652bccb7-cec9-410e-aa6e-f8622c24c967">
                         <pattern type="http://www.mulesoft.org/schema/mule/dropbox/dropbox-connector" name="Delete" entity-id="Dropbox#4">
                             <properties>
 <property value="Dropbox" name="config-ref"/>
 <property value="http://www.mulesoft.org/schema/mule/dropbox/delete" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
 <property value="Dropbox" name="config-ref"/>
-<property value="18" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
 <property value="#[payload['dropboxPath']]" name="path"/>
-<property value="18" name="auxiliary;index"/>
-<property value="18" name="auxiliary;index"/>
-<property value="18" name="auxiliary;index"/>
-<property value="18" name="auxiliary;index"/>
-<property value="18" name="auxiliary;index"/>
-<property value="18" name="auxiliary;index"/>
-<property value="18" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
+<property value="20" name="auxiliary;index"/>
                             </properties>
                         </pattern>
-                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="ce877c6d-a721-40a4-a816-de4c69671ea6"/>
-                    </lane>
-                    <lane index="20" hadOnlyOneElement="false" entity-id="e86c68cb-8d4d-4100-ab22-4ec9d15b1eb1">
-                        <pattern type="http://www.mulesoft.org/schema/mule/debugger/debugger-connector" name="Breakpoint" entity-id="Breakpoint#1">
+                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="Object to JSON#3">
                             <properties>
-<property name="config-ref"/>
-<property value="http://www.mulesoft.org/schema/mule/debugger/breakpoint" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
-<property name="config-ref"/>
+<property name="returnClass"/>
+<property name="ignoreBadInput"/>
+<property name="encoding"/>
 <property value="21" name="auxiliary;index"/>
-<property name="condition"/>
-<property value="21" name="auxiliary;index"/>
-<property value="21" name="auxiliary;index"/>
+<property name="mimeType"/>
 <property value="21" name="auxiliary;index"/>
 <property value="21" name="auxiliary;index"/>
+<property name="mapper-ref"/>
+<property name="sourceClass"/>
 <property value="21" name="auxiliary;index"/>
 <property value="21" name="auxiliary;index"/>
 <property value="21" name="auxiliary;index"/>
                             </properties>
                         </pattern>
+                    </lane>
+                    <lane index="23" hadOnlyOneElement="false" entity-id="a6cf8203-74d7-460d-852e-516ee03c9e56">
                         <pattern type="http://www.mulesoft.org/schema/mule/dropbox/dropbox-connector" name="Download File" entity-id="Dropbox#5">
                             <properties>
 <property value="Dropbox" name="config-ref"/>
 <property value="http://www.mulesoft.org/schema/mule/dropbox/download-file" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
 <property value="Dropbox" name="config-ref"/>
-<property value="22" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
 <property value="#[payload['destinationPath']]" name="moveTo"/>
 <property value="#[payload['dropboxPath']]" name="path"/>
 <property value="#[payload.get('delete')]" name="delete"/>
-<property value="22" name="auxiliary;index"/>
-<property value="22" name="auxiliary;index"/>
-<property value="22" name="auxiliary;index"/>
-<property value="22" name="auxiliary;index"/>
-<property value="22" name="auxiliary;index"/>
-<property value="22" name="auxiliary;index"/>
-<property value="22" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
+<property value="25" name="auxiliary;index"/>
                             </properties>
                         </pattern>
-                        <pattern type="http://www.mulesoft.org/schema/mule/core/message-properties-transformer" name="Message Properties" entity-id="3c4f2718-5d61-42e2-a70a-59d56693c6d5">
+                        <pattern type="http://www.mulesoft.org/schema/mule/core/message-properties-transformer" name="Message Properties" entity-id="Message Properties#1">
                             <properties>
-<property value="" name="returnClass"/>
-<property value="false" name="ignoreBadInput"/>
-<property value="outbound" name="scope"/>
-<property value="false" name="overwrite"/>
-<property value="" name="encoding"/>
-<property value="" name="mimeType"/>
-<property name="updated"/>
-<property-collection name="@http://www.mulesoft.org/schema/mule/core/add-message-property;1964975706">
+<property name="returnClass"/>
+<property name="ignoreBadInput"/>
+<property name="encoding"/>
+<property value="26" name="auxiliary;index"/>
+<property name="mimeType"/>
+<property value="26" name="auxiliary;index"/>
+<property value="26" name="auxiliary;index"/>
+<property name="overwrite"/>
+<property name="scope"/>
+<property value="26" name="auxiliary;index"/>
+<property value="26" name="auxiliary;index"/>
+<property value="26" name="auxiliary;index"/>
+<property value="26" name="auxiliary;index"/>
+<property value="26" name="auxiliary;index"/>
+<property value="26" name="auxiliary;index"/>
+<property-collection name="@http://www.mulesoft.org/schema/mule/core/add-message-property;0">
     <property value="attachment" name="value"/>
+    <property value="27" name="auxiliary;wrapIn"/>
+    <property value="27" name="auxiliary;index"/>
     <property value="Content-Disposition" name="key"/>
-    <property value="" name="value-ref"/>
     <property value="true" name="isProcessed$$$$"/>
 </property-collection>
                             </properties>
-                            <description></description>
                         </pattern>
                     </lane>
-                    <lane index="24" hadOnlyOneElement="false" entity-id="d30695d9-568c-4354-b608-034cdd925d11">
+                    <lane index="29" hadOnlyOneElement="false" entity-id="83cde291-dbcc-4ce6-af7b-7178f0abcacd">
                         <pattern type="http://www.mulesoft.org/schema/mule/dropbox/dropbox-connector" name="List" entity-id="Dropbox#6">
                             <properties>
 <property value="Dropbox" name="config-ref"/>
 <property value="http://www.mulesoft.org/schema/mule/dropbox/list" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
 <property value="Dropbox" name="config-ref"/>
-<property value="25" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
 <property value="#[payload['dropboxPath']]" name="path"/>
-<property value="25" name="auxiliary;index"/>
-<property value="25" name="auxiliary;index"/>
-<property value="25" name="auxiliary;index"/>
-<property value="25" name="auxiliary;index"/>
-<property value="25" name="auxiliary;index"/>
-<property value="25" name="auxiliary;index"/>
-<property value="25" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
+<property value="30" name="auxiliary;index"/>
                             </properties>
                         </pattern>
-                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="4c6b20a9-0244-4f6c-9a42-177eeb8f3da5"/>
+                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="Object to JSON#4">
+                            <properties>
+<property name="returnClass"/>
+<property name="ignoreBadInput"/>
+<property name="encoding"/>
+<property value="31" name="auxiliary;index"/>
+<property name="mimeType"/>
+<property value="31" name="auxiliary;index"/>
+<property value="31" name="auxiliary;index"/>
+<property name="mapper-ref"/>
+<property name="sourceClass"/>
+<property value="31" name="auxiliary;index"/>
+<property value="31" name="auxiliary;index"/>
+<property value="31" name="auxiliary;index"/>
+                            </properties>
+                        </pattern>
                     </lane>
-                    <lane index="27" hadOnlyOneElement="false" entity-id="b00c06af-a0fd-4972-bdd7-36ddca1ba807">
+                    <lane index="33" hadOnlyOneElement="false" entity-id="5a4ed8ff-cf4a-4673-a7e0-5c05bcc6711e">
                         <pattern type="http://www.mulesoft.org/schema/mule/dropbox/dropbox-connector" name="Move" entity-id="Dropbox#7">
                             <properties>
 <property value="Dropbox" name="config-ref"/>
 <property value="http://www.mulesoft.org/schema/mule/dropbox/move" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
 <property value="Dropbox" name="config-ref"/>
-<property value="28" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
 <property value="#[payload['from']]" name="from"/>
 <property value="#[payload['to']]" name="to"/>
-<property value="28" name="auxiliary;index"/>
-<property value="28" name="auxiliary;index"/>
-<property value="28" name="auxiliary;index"/>
-<property value="28" name="auxiliary;index"/>
-<property value="28" name="auxiliary;index"/>
-<property value="28" name="auxiliary;index"/>
-<property value="28" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
+<property value="34" name="auxiliary;index"/>
                             </properties>
                         </pattern>
-                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="f3323c22-fd29-417c-ad07-ab25e96380f2"/>
+                        <pattern type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" name="Object to JSON" entity-id="Object to JSON#5">
+                            <properties>
+<property name="returnClass"/>
+<property name="ignoreBadInput"/>
+<property name="encoding"/>
+<property value="35" name="auxiliary;index"/>
+<property name="mimeType"/>
+<property value="35" name="auxiliary;index"/>
+<property value="35" name="auxiliary;index"/>
+<property name="mapper-ref"/>
+<property name="sourceClass"/>
+<property value="35" name="auxiliary;index"/>
+<property value="35" name="auxiliary;index"/>
+<property value="35" name="auxiliary;index"/>
+                            </properties>
+                        </pattern>
                     </lane>
-                    <lane index="30" hadOnlyOneElement="false" entity-id="bfc2f6c7-3c48-4349-855a-0cb146c738bf">
+                    <lane index="37" hadOnlyOneElement="false" entity-id="306089bc-ab80-4c94-a0c8-1a1260f62938">
                         <pattern type="http://www.mulesoft.org/schema/mule/core/logger" name="Logger" entity-id="Logger#2">
                             <properties>
-<property name="message"/>
+<property value="INVALID OPERATION" name="message"/>
 <property value="INFO" name="level"/>
 <property name="category"/>
-<property value="31" name="auxiliary;index"/>
-<property value="31" name="auxiliary;index"/>
-<property value="31" name="auxiliary;index"/>
+<property value="38" name="auxiliary;index"/>
+<property value="38" name="auxiliary;index"/>
+<property value="38" name="auxiliary;index"/>
                             </properties>
                         </pattern>
                     </lane>
                 </compartment>
             </splitter>
-            <pattern type="http://www.mulesoft.org/schema/mule/core/logger" name="Logger" entity-id="1701587c-bf14-4a5f-b674-b035b153244a">
+            <pattern type="http://www.mulesoft.org/schema/mule/core/logger" name="Logger" entity-id="Logger#3">
                 <properties>
                     <property value="Final Payload is #[payload]" name="message"/>
-                    <property value="" name="category"/>
                     <property value="INFO" name="level"/>
-                    <property name="updated"/>
+                    <property name="category"/>
+                    <property value="39" name="auxiliary;index"/>
+                    <property value="39" name="auxiliary;index"/>
+                    <property value="39" name="auxiliary;index"/>
                 </properties>
-                <description></description>
             </pattern>
         </lane>
     </flow>
-    <flow SubFlow="false" name="dropboxdemoFlow1" entity-id="eac7e9e2-222f-4c2d-862a-050ed61360f1">
+    <flow SubFlow="false" name="dropboxdemoFlow1" entity-id="5d055d6f-1ff3-41a3-b8a3-be386a68840f">
         <properties>
             <property name="processingStrategy2"/>
             <property name="processingStrategy"/>
-            <property value="33" name="auxiliary;index"/>
+            <property value="40" name="auxiliary;index"/>
             <property name="bussinessEventsLabel"/>
             <property name="tracking:enable-default-events"/>
-            <property value="33" name="auxiliary;index"/>
-            <property value="33" name="auxiliary;index"/>
-            <property value="33" name="auxiliary;index"/>
+            <property value="40" name="auxiliary;index"/>
+            <property value="40" name="auxiliary;index"/>
+            <property value="40" name="auxiliary;index"/>
         </properties>
         <lane index="0" hadOnlyOneElement="false" entity-id="compartment-lane#2">
             <endpoint message-exchange-pattern="OneWay" direction="Inbound" type="http://www.mulesoft.org/schema/mule/http/endpoint" name="HTTP" entity-id="HTTP#2">
                 <properties>
                     <property value="one-way" name="exchange-pattern"/>
                     <property value="request-response" name="exchange-pattern"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                     <property value="http://www.mulesoft.org/schema/mule/http/endpoint" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                     <property name="httpLabel"/>
                     <property value="localhost" name="host"/>
                     <property value="8081" name="port"/>
                     <property value="auth" name="path"/>
                     <property name="method"/>
-                    <property value="34" name="auxiliary;index"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                     <property name="businessEventsLabel"/>
                     <property name="tracking:enable-default-events"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                     <property name="address"/>
                     <property name="encoding"/>
                     <property name="disableTransportTransformer"/>
                     <property name="mimeType"/>
                     <property name="responseTimeout"/>
                     <property name="followRedirects"/>
-                    <property value="34" name="auxiliary;index"/>
-                    <property value="34" name="auxiliary;index"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                     <property name="connector-ref"/>
                     <property name="ref"/>
                     <property name="transformer-refs"/>
                     <property name="responseTransformer-refs"/>
-                    <property value="34" name="auxiliary;index"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                     <property name="user"/>
                     <property name="password"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                     <property name="contentType"/>
                     <property name="keep-alive"/>
-                    <property value="34" name="auxiliary;index"/>
-                    <property value="34" name="auxiliary;index"/>
-                    <property value="34" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
+                    <property value="41" name="auxiliary;index"/>
                 </properties>
             </endpoint>
             <pattern type="http://www.mulesoft.org/schema/mule/dropbox/dropbox-connector" name="Dropbox" entity-id="Dropbox#8">
@@ -431,72 +481,72 @@
                     <property value="Dropbox" name="config-ref"/>
                     <property value="http://www.mulesoft.org/schema/mule/dropbox/authorize" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
                     <property value="Dropbox" name="config-ref"/>
-                    <property value="35" name="auxiliary;index"/>
-                    <property value="35" name="auxiliary;index"/>
-                    <property value="35" name="auxiliary;index"/>
-                    <property value="35" name="auxiliary;index"/>
-                    <property value="35" name="auxiliary;index"/>
-                    <property value="35" name="auxiliary;index"/>
-                    <property value="35" name="auxiliary;index"/>
+                    <property value="42" name="auxiliary;index"/>
+                    <property value="42" name="auxiliary;index"/>
+                    <property value="42" name="auxiliary;index"/>
+                    <property value="42" name="auxiliary;index"/>
+                    <property value="42" name="auxiliary;index"/>
+                    <property value="42" name="auxiliary;index"/>
+                    <property value="42" name="auxiliary;index"/>
                 </properties>
             </pattern>
         </lane>
     </flow>
-    <flow SubFlow="false" name="HTML" entity-id="818a6f35-ffb0-44ae-96c1-8e924f9cad24">
+    <flow SubFlow="false" name="HTML" entity-id="7dadd9c5-42c4-49bd-bd20-c079d02ed02d">
         <properties>
             <property name="processingStrategy2"/>
             <property name="processingStrategy"/>
-            <property value="36" name="auxiliary;index"/>
+            <property value="43" name="auxiliary;index"/>
             <property name="bussinessEventsLabel"/>
             <property name="tracking:enable-default-events"/>
-            <property value="36" name="auxiliary;index"/>
-            <property value="36" name="auxiliary;index"/>
-            <property value="36" name="auxiliary;index"/>
+            <property value="43" name="auxiliary;index"/>
+            <property value="43" name="auxiliary;index"/>
+            <property value="43" name="auxiliary;index"/>
         </properties>
         <lane index="0" hadOnlyOneElement="false" entity-id="compartment-lane#3">
             <endpoint message-exchange-pattern="OneWay" direction="Inbound" type="http://www.mulesoft.org/schema/mule/http/endpoint" name="HTTP" entity-id="HTTP#3">
                 <properties>
                     <property value="one-way" name="exchange-pattern"/>
                     <property value="request-response" name="exchange-pattern"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                     <property value="http://www.mulesoft.org/schema/mule/http/endpoint" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                     <property name="httpLabel"/>
                     <property value="localhost" name="host"/>
                     <property value="8081" name="port"/>
                     <property value="home" name="path"/>
                     <property name="method"/>
-                    <property value="37" name="auxiliary;index"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                     <property name="businessEventsLabel"/>
                     <property name="tracking:enable-default-events"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                     <property name="address"/>
                     <property name="encoding"/>
                     <property name="disableTransportTransformer"/>
                     <property name="mimeType"/>
                     <property name="responseTimeout"/>
                     <property name="followRedirects"/>
-                    <property value="37" name="auxiliary;index"/>
-                    <property value="37" name="auxiliary;index"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                     <property name="connector-ref"/>
                     <property name="ref"/>
                     <property name="transformer-refs"/>
                     <property name="responseTransformer-refs"/>
-                    <property value="37" name="auxiliary;index"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                     <property name="user"/>
                     <property name="password"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                     <property name="contentType"/>
                     <property name="keep-alive"/>
-                    <property value="37" name="auxiliary;index"/>
-                    <property value="37" name="auxiliary;index"/>
-                    <property value="37" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
+                    <property value="44" name="auxiliary;index"/>
                 </properties>
             </endpoint>
-            <unknown index="38" description="false" entity-id="unknown#1">
+            <unknown index="45" description="false" entity-id="unknown#1">
                 <content>&lt;http:static-resource-handler xmlns:http=&quot;http://www.mulesoft.org/schema/mule/http&quot; resourceBase=&quot;${app.home}/docroot&quot; defaultFile=&quot;home.html&quot;/&gt;</content>
             </unknown>
         </lane>
