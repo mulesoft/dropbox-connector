@@ -1,7 +1,7 @@
 Mule Dropbox Connector
 =========================
 
-The Dropbox Connector will allow to use the DropboREST API. Almost every operation that can be done via the API can be done thru this connector.
+The Dropbox Connector will allow to use the Dropbox REST API. Almost every operation that can be done via the API can be done thru this connector.
 
 Installation and Usage
 ----------------------
