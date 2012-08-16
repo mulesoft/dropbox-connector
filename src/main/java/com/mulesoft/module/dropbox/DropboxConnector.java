@@ -52,7 +52,8 @@ import com.sun.jersey.oauth.signature.OAuthParameters;
 import com.sun.jersey.oauth.signature.OAuthSecrets;
 
 /**
- * Cloud Connector
+ * Dropbox Cloud Connector.
+ * The Dropbox Connector will allow to use the DropboREST API. Almost every operation that can be done via the API can be done thru this connector.
  * 
  * @author MuleSoft, Inc.
  */
