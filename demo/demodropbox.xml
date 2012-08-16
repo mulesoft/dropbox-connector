@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:debugger="http://www.mulesoft.org/schema/mule/debugger" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:https="http://www.mulesoft.org/schema/mule/https" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:dropbox="http://www.mulesoft.org/schema/mule/dropbox" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/debugger http://www.mulesoft.org/schema/mule/debugger/current/mule-debugger.xsd 
+http://www.mulesoft.org/schema/mule/dropbox http://www.mulesoft.org/schema/mule/dropbox/3.2.2/mule-dropbox.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd 
+http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/https/current/mule-https.xsd ">
+    <dropbox:config name="Dropbox" appKey="moy0mq0d2jojxvh" appSecret="u9hotagqyd45z2v" userEmail="mariano.merlo@mulesource.com" userPassword="dropbox4mule!" doc:name="Dropbox" port="8081">
+        <dropbox:oauth-callback-config domain="localhost" localPort="8081" remotePort="8081"/>
+    </dropbox:config>
+    <flow name="Processor" doc:name="Processor">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="in" doc:name="HTTP"/>
+        <http:body-to-parameter-map-transformer doc:name="Body to Parameter Map"/>
+        <logger message="MAP REQUEST: #[payload]" level="INFO" doc:name="Logger"/>
+        <choice doc:name="Choice">
+            <when expression="#[payload.get('op') == 'upFile']">
+                <processor-chain>
+                    <set-variable variableName="controllerMap" value="#[payload]" doc:name="Save input data"/>
+                    <custom-transformer class="org.mule.dropboxdemo.transformers.FileToInputStream" doc:name="Java"/>
+                    <dropbox:upload-file config-ref="Dropbox" filename="#[flowVars['controllerMap'].get('fileName')]" path="#[flowVars['controllerMap'].get('dropboxPath')]" doc:name="Upload File"/>
+                    <json:object-to-json-transformer doc:name="Object to JSON"/>
+                </processor-chain>
+            </when>
+            <when expression="#[payload.get('op') == 'createF']">
+                <processor-chain>
+                    <dropbox:create-folder config-ref="Dropbox" path="#[payload['dropboxPath']]" doc:name="Create Folder"/>
+                    <json:object-to-json-transformer doc:name="Object to JSON"/>
+                </processor-chain>
+            </when>
+            <when expression="#[payload.get('op') == 'delete']">
+                <processor-chain>
+                    <dropbox:delete config-ref="Dropbox" path="#[payload['dropboxPath']]" doc:name="Delete"/>
+                    <json:object-to-json-transformer doc:name="Object to JSON"/>
+                </processor-chain>
+            </when>
+            <when expression="#[payload.get('op') == 'downFile']">
+                <processor-chain>
+                    <debugger:breakpoint doc:name="Breakpoint"/>
+                    <dropbox:download-file config-ref="Dropbox" moveTo="#[payload['destinationPath']]" path="#[payload['dropboxPath']]" delete="#[payload.get('delete')]" doc:name="Download File"/>
+                    <message-properties-transformer doc:name="Message Properties">
+                        <add-message-property key="Content-Disposition" value="attachment"/>
+                    </message-properties-transformer>
+                </processor-chain>
+            </when>
+            <when expression="#[payload.get('op') == 'list']">
+                <processor-chain>
+                    <dropbox:list config-ref="Dropbox" path="#[payload['dropboxPath']]" doc:name="List"/>
+                    <json:object-to-json-transformer doc:name="Object to JSON"/>
+                </processor-chain>
+            </when>
+            <when expression="#[payload.get('op') == 'move']">
+                <processor-chain>
+                    <dropbox:move config-ref="Dropbox" from="#[payload['from']]" to="#[payload['to']]" doc:name="Move"/>
+                    <json:object-to-json-transformer doc:name="Object to JSON"/>
+                </processor-chain>
+            </when>
+            <otherwise>
+                <processor-chain>
+                    <logger level="INFO" doc:name="Logger"/>
+                </processor-chain>
+            </otherwise>
+        </choice>
+        <logger message="Final Payload is #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="dropboxdemoFlow1" doc:name="dropboxdemoFlow1">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="auth" doc:name="HTTP"/>
+        <dropbox:authorize config-ref="Dropbox" doc:name="Dropbox"/>
+    </flow>
+    <flow name="HTML" doc:name="HTML">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="home" doc:name="HTTP"/>
+        <http:static-resource-handler resourceBase="${app.home}/docroot" defaultFile="home.html"/>
+    </flow>
+</mule>

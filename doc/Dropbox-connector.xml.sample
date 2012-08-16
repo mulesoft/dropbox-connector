@@ -1,0 +1,29 @@
+<!-- BEGIN_INCLUDE(dropbox:authorize) -->
+    <dropbox:authorize/>
+<!-- END_INCLUDE(dropbox:authorize) -->
+
+<!-- BEGIN_INCLUDE(dropbox:upload-file) -->
+    <dropbox:upload-file path="foo/bar" filename="test.txt"/>
+<!-- END_INCLUDE(dropbox:upload-file) -->
+
+<!-- BEGIN_INCLUDE(dropbox:create-folder) -->
+    <dropbox:create-folder path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:create-folder) -->
+
+<!-- BEGIN_INCLUDE(dropbox:download-file) -->
+    <dropbox:download-file path="foo/bar/test.txt"/>
+<!-- END_INCLUDE(dropbox:download-file) -->
+
+<!-- BEGIN_INCLUDE(dropbox:list) -->
+    <dropbox:list path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:list) -->
+
+<!-- BEGIN_INCLUDE(dropbox:delete) -->
+    <dropbox:delete path="foo/bar/test.txt"/>
+<!-- END_INCLUDE(dropbox:delete) -->
+
+<!-- BEGIN_INCLUDE(dropbox:move) -->
+    <dropbox:move from="foo/bar/test.txt" to="/home/user"/>
+<!-- END_INCLUDE(dropbox:move) -->
+
+ 
