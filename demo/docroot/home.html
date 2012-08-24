@@ -36,6 +36,7 @@
 					<option value="downFile">Download File</option>
 					<option value="list">List</option>
 					<option value="move">Move</option>
+					<option value="getLink">Get Link</option>
 				</select><br /><br />
 		<div class="hidden upFile" id="inputFile">Select File: <select name="inputFile" >
 																	<option value="Dropbox-connector.png" >Dropbox-connector</option>
@@ -43,12 +44,13 @@
 																	<option value="Dropbox-transformer.png" >Dropbox-transformer</option>
 																</select>
 		</div>
-		<div class="hidden upFile downFile" id="delete">Delete?  Yes <input type="radio" name="delete" value="true"  /> No <input type="radio" name="delete" value="false"  /></div>
-		<div class="hidden upFile createF delete downFile list" id="dropboxPath">Path:<input type="text" name="dropboxPath" /></div>
+		<div class="hidden upFile" id="overwrite">Overwrite?  Yes <input type="radio" name="overwrite" value="true"  /> No <input type="radio" name="overwrite" value="false"  /></div>
+		<div class="hidden upFile createF delete downFile list getLink" id="dropboxPath">Path:<input type="text" name="dropboxPath" /></div>
 		<div class="hidden upFile" id="fileName">Filename:<input type="text" name="fileName" /></div>
-		<div class="hidden downFile" id="destinationPath">Move To (leave blank if not used):<input type="text" name="destinationPath" /></div>
 		<div class="hidden move" id="from">From:<input type="text" name="from" /></div>
 		<div class="hidden move" id="to">To:<input type="text" name="to" /></div>
+		<div class="hidden move downFile" id="delete">Delete?  Yes <input type="radio" name="delete" value="true"  /> No <input type="radio" name="delete" value="false"  /></div>
+		<div class="hidden getLink" id="shortUrl">Short URL?  Yes <input type="radio" name="shortUrl" value="true"  /> No <input type="radio" name="shortUrl" value="false"  /></div>
 		</br >
 		<input type="submit" value="Submit"/>
 	</form>

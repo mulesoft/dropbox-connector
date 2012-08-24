@@ -34,7 +34,6 @@ import org.mule.api.annotations.oauth.OAuthConsumerSecret;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.Optional;
 import org.mule.api.annotations.param.Payload;
-import org.mule.util.StringUtils;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
@@ -57,7 +56,7 @@ import com.sun.jersey.oauth.signature.OAuthSecrets;
  * 
  * @author MuleSoft, Inc.
  */
-@Connector(name = "dropbox", schemaVersion = "3.2.2")
+@Connector(name = "dropbox", schemaVersion = "3.2.2", friendlyName = "Dropbox")
 @OAuth(requestTokenUrl = "https://api.dropbox.com/1/oauth/request_token", accessTokenUrl = "https://api.dropbox.com/1/oauth/access_token", authorizationUrl = "https://www.dropbox.com/1/oauth/authorize", verifierRegex = "oauth_token=([^&]+)")
 public class DropboxConnector {
 	/**
@@ -131,8 +130,7 @@ public class DropboxConnector {
 	 * Upload file to Dropbox. The payload is an InputStream containing bytes of
 	 * the data to be uploaded.
 	 * 
-	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample
-	 * dropbox:upload-file}
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:upload-file}
 	 * 
 	 * @param accessToken
 	 *            accessToken
@@ -187,8 +185,7 @@ public class DropboxConnector {
 	/**
 	 * Create new folder on Dropbox
 	 * 
-	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample
-	 * dropbox:create-folder}
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:create-folder}
 	 * 
 	 * @param accessToken
 	 *            accessToken
@@ -257,8 +254,7 @@ public class DropboxConnector {
 	/**
 	 * Downloads a file from Dropbox
 	 * 
-	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample
-	 * dropbox:download-file}
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:download-file}
 	 * 
 	 * @param accessToken
 	 *            accessToken
@@ -279,8 +275,7 @@ public class DropboxConnector {
 	 */
 	@Processor
 	public InputStream downloadFile(String path,
-			@Optional @Default("false") boolean delete,
-			@Optional @Default("") String moveTo) throws Exception {
+			@Optional @Default("false") boolean delete) throws Exception {
 		if (path.startsWith("/")) {
 			path = path.substring(1);
 		}
@@ -295,9 +290,7 @@ public class DropboxConnector {
 
 		InputStream response = r.get(InputStream.class);
 
-		if (!StringUtils.isEmpty(moveTo))
-			move(path, moveTo);
-		else if (delete)
+		if (delete)
 			delete(path);
 		return response;
 	}
@@ -355,13 +348,15 @@ public class DropboxConnector {
 	 * @param to
 	 *            Specifies the destination path, including the new name for the
 	 *            file or folder, relative to root.
+	 *            
+	 * @param deleteFromSrc boolean indicating if the file or folder should be deleted from source. If false, this method will work as a copy.
 	 * 
 	 * @return http response
 	 * @throws Exception
 	 *             exception
 	 */
 	@Processor
-	public String move(String from, String to) throws Exception {
+	public String move(String from, String to, @Optional @Default("true") boolean deleteFromSrc) throws Exception {
 		if (from.startsWith("/")) {
 			from = from.substring(1);
 		}
@@ -370,7 +365,7 @@ public class DropboxConnector {
 		}
 		final String apiUrl = getApiUrl("fileops/move");
 
-		WebResource r = client.resource(apiUrl).queryParam("root", "dropbox")
+		WebResource r = getClient().resource(apiUrl).queryParam("root", "dropbox")
 				.queryParam("from_path", from).queryParam("to_path", to);
 
 		if (isDebug()) {
@@ -380,6 +375,38 @@ public class DropboxConnector {
 
 		String response = r.post(String.class);
 
+		if ( deleteFromSrc)
+			delete(from);
+		return response;
+	}
+
+	/**
+	 * Creates and returns a Dropbox link to files or folders users can use to view a preview of the file in a web browser.
+	 * 
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:get-link}
+	 * 
+	 * @param path The path to the file or folder you want to link to.
+	 * @param shortUrl Boolean indicating if the url returned will be shortened using the Dropbox url shortener (when true) or will link directly to the file's preview page (when false).
+	 * @return String. A Dropbox link to the given path.
+	 * 
+	 * @throws Exception exception
+	 */
+	@Processor
+	public String getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
+		if (path.startsWith("/")) {
+			path = path.substring(1);
+		}
+		final String apiUrl = getApiUrl("shares/dropbox");
+		
+		WebResource r = getClient().resource(apiUrl).path(path).queryParam("short_url", shortUrl.toString());
+		
+		if (isDebug()) {
+			r.addFilter(new LoggingFilter());
+		}
+		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+		
+		String response = r.post(String.class);
+		
 		return response;
 	}
 

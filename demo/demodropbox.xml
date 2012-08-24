@@ -21,7 +21,7 @@ http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/ht
                 <processor-chain>
                     <set-variable variableName="controllerMap" value="#[payload]" doc:name="Save input data"/>
                     <custom-transformer class="org.mule.dropboxdemo.transformers.FileToInputStream" doc:name="Java"/>
-                    <dropbox:upload-file config-ref="Dropbox" filename="#[flowVars['controllerMap'].get('fileName')]" path="#[flowVars['controllerMap'].get('dropboxPath')]" doc:name="Upload File"/>
+                    <dropbox:upload-file config-ref="Dropbox" filename="#[flowVars['controllerMap'].get('fileName')]" path="#[flowVars['controllerMap'].get('dropboxPath')]" overwrite="#[flowVars.get('controllerMap').get('overwrite')]" doc:name="Upload File"/>
                     <json:object-to-json-transformer doc:name="Object to JSON"/>
                 </processor-chain>
             </when>
@@ -39,7 +39,7 @@ http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/ht
             </when>
             <when expression="#[payload.get('op') == 'downFile']">
                 <processor-chain>
-                    <dropbox:download-file config-ref="Dropbox" moveTo="#[payload['destinationPath']]" path="#[payload['dropboxPath']]" delete="#[payload.get('delete')]" doc:name="Download File"/>
+                    <dropbox:download-file config-ref="Dropbox" path="#[payload['dropboxPath']]" delete="#[payload.get('delete')]" doc:name="Download File"/>
                     <message-properties-transformer doc:name="Message Properties">
                         <add-message-property key="Content-Disposition" value="attachment"/>
                     </message-properties-transformer>
@@ -53,7 +53,13 @@ http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/ht
             </when>
             <when expression="#[payload.get('op') == 'move']">
                 <processor-chain>
-                    <dropbox:move config-ref="Dropbox" from="#[payload['from']]" to="#[payload['to']]" doc:name="Move"/>
+                    <dropbox:move config-ref="Dropbox" from="#[payload['from']]" to="#[payload['to']]" deleteFromSrc="#[payload.get('delete')]" doc:name="Move"/>
+                    <json:object-to-json-transformer doc:name="Object to JSON"/>
+                </processor-chain>
+            </when>
+            <when expression="#[payload.get('op') == 'getLink']">
+                <processor-chain>
+                    <dropbox:get-link config-ref="Dropbox" path="#[payload['dropboxPath']]" shortUrl="#[payload.get('shortUrl')]" doc:name="Get Link"/>
                     <json:object-to-json-transformer doc:name="Object to JSON"/>
                 </processor-chain>
             </when>
@@ -65,9 +71,9 @@ http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/ht
         </choice>
         <logger message="Final Payload is #[payload]" level="INFO" doc:name="Logger"/>
     </flow>
-    <flow name="dropboxdemoFlow1" doc:name="dropboxdemoFlow1">
+    <flow name="Authorize" doc:name="Authorize">
         <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="auth" doc:name="HTTP"/>
-        <dropbox:authorize config-ref="Dropbox" doc:name="Dropbox"/>
+        <dropbox:authorize config-ref="Dropbox" doc:name="Authorize"/>
     </flow>
     <flow name="HTML" doc:name="HTML">
         <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="home" doc:name="HTTP"/>
