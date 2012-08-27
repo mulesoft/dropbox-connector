@@ -28,9 +28,11 @@ import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
 import org.mule.api.annotations.oauth.OAuth;
 import org.mule.api.annotations.oauth.OAuthAccessToken;
+import org.mule.api.annotations.oauth.OAuthAccessTokenIdentifier;
 import org.mule.api.annotations.oauth.OAuthAccessTokenSecret;
 import org.mule.api.annotations.oauth.OAuthConsumerKey;
 import org.mule.api.annotations.oauth.OAuthConsumerSecret;
+import org.mule.api.annotations.oauth.OAuthProtected;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.Optional;
 import org.mule.api.annotations.param.Payload;
@@ -123,7 +125,7 @@ public class DropboxConnector {
 
 	@OAuthAccessTokenSecret
 	private String accessTokenSecret;
-
+	
 	private Client client;
 
 	/**
@@ -150,6 +152,7 @@ public class DropboxConnector {
 	 *             exception
 	 */
 	@Processor
+	@OAuthProtected
 	public String uploadFile(@Payload InputStream fileDataObj,
 							@Optional @Default("true") Boolean overwrite,
 							String path,
@@ -199,6 +202,7 @@ public class DropboxConnector {
 	 *             exception
 	 */
 	@Processor
+	@OAuthProtected
 	public String createFolder(String path) throws Exception {
 		final String apiUrl = getApiUrl("fileops/create_folder");
 
@@ -233,6 +237,7 @@ public class DropboxConnector {
 	 *             exception
 	 */
 	@Processor
+	@OAuthProtected
 	public String delete(String path) throws Exception {
 		final String apiUrl = getApiUrl("fileops/delete");
 
@@ -274,6 +279,7 @@ public class DropboxConnector {
 	 *             exception
 	 */
 	@Processor
+	@OAuthProtected
 	public InputStream downloadFile(String path,
 			@Optional @Default("false") boolean delete) throws Exception {
 		if (path.startsWith("/")) {
@@ -312,6 +318,7 @@ public class DropboxConnector {
 	 *             exception
 	 */
 	@Processor
+	@OAuthProtected
 	public List<String> list(String path) throws Exception {
 		final String apiUrl = getApiUrl("metadata/dropbox");
 
@@ -356,6 +363,7 @@ public class DropboxConnector {
 	 *             exception
 	 */
 	@Processor
+	@OAuthProtected
 	public String move(String from, String to, @Optional @Default("true") boolean deleteFromSrc) throws Exception {
 		if (from.startsWith("/")) {
 			from = from.substring(1);
@@ -392,6 +400,7 @@ public class DropboxConnector {
 	 * @throws Exception exception
 	 */
 	@Processor
+	@OAuthProtected
 	public String getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
 		if (path.startsWith("/")) {
 			path = path.substring(1);
@@ -537,4 +546,6 @@ public class DropboxConnector {
 	public void setAccessTokenSecret(String accessTokenSecret) {
 		this.accessTokenSecret = accessTokenSecret;
 	}
+	
+	
 }
