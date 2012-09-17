@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/debugger http://www.mulesoft.org/schema/mule/debugger/current/mule-debugger.xsd 
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd 
 http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/https/current/mule-https.xsd ">
-    <dropbox:config name="Dropbox" appKey="moy0mq0d2jojxvh" appSecret="u9hotagqyd45z2v" userEmail="mariano.merlo@mulesource.com" userPassword="dropbox4mule!" doc:name="Dropbox" port="8081">
+    <dropbox:config name="Dropbox" appKey="moy0mq0d2jojxvh" appSecret="u9hotagqyd45z2v" doc:name="Dropbox" port="8081">
         <dropbox:oauth-callback-config domain="localhost" localPort="8081" remotePort="8081"/>
     </dropbox:config>
     <flow name="Processor" doc:name="Processor">
