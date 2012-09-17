@@ -28,7 +28,6 @@ import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
 import org.mule.api.annotations.oauth.OAuth;
 import org.mule.api.annotations.oauth.OAuthAccessToken;
-import org.mule.api.annotations.oauth.OAuthAccessTokenIdentifier;
 import org.mule.api.annotations.oauth.OAuthAccessTokenSecret;
 import org.mule.api.annotations.oauth.OAuthConsumerKey;
 import org.mule.api.annotations.oauth.OAuthConsumerSecret;
@@ -85,18 +84,6 @@ public class DropboxConnector {
 	@Optional
 	@Default("80")
 	private int port;
-
-	/**
-	 * User email address
-	 */
-	@Configurable
-	private String userEmail;
-
-	/**
-	 * Password
-	 */
-	@Configurable
-	private String userPassword;
 
 	/**
 	 * Application key
@@ -443,22 +430,6 @@ public class DropboxConnector {
 
 	public void setPort(int port) {
 		this.port = port;
-	}
-
-	public String getUserEmail() {
-		return userEmail;
-	}
-
-	public void setUserEmail(String userEmail) {
-		this.userEmail = userEmail;
-	}
-
-	public String getUserPassword() {
-		return userPassword;
-	}
-
-	public void setUserPassword(String userPassword) {
-		this.userPassword = userPassword;
 	}
 
 	public String getAppKey() {
