@@ -1,0 +1,8 @@
+com.mulesoft.module.dropbox
+com.mulesoft.module.dropbox.adapters
+com.mulesoft.module.dropbox.agents
+com.mulesoft.module.dropbox.config
+com.mulesoft.module.dropbox.oauth
+com.mulesoft.module.dropbox.process
+com.mulesoft.module.dropbox.processors
+
