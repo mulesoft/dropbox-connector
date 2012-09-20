@@ -146,6 +146,9 @@ public class DropboxConnector {
 							String filename) throws Exception {
 		
 		final InputStream fileData = (InputStream) fileDataObj;
+
+		path = adaptPath(path);
+		
 		final String apiUrl = getApiContentUrl(path);
 
 		final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(fileData, MediaType.APPLICATION_OCTET_STREAM_TYPE);
@@ -269,9 +272,7 @@ public class DropboxConnector {
 	@OAuthProtected
 	public InputStream downloadFile(String path,
 			@Optional @Default("false") boolean delete) throws Exception {
-		if (path.startsWith("/")) {
-			path = path.substring(1);
-		}
+		path = adaptPath(path);
 		final String apiUrl = getApiContentUrl(path);
 
 		WebResource r = getClient().resource(apiUrl);
@@ -352,12 +353,8 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public String move(String from, String to, @Optional @Default("true") boolean deleteFromSrc) throws Exception {
-		if (from.startsWith("/")) {
-			from = from.substring(1);
-		}
-		if (to.startsWith("/")) {
-			to = to.substring(1);
-		}
+		from = adaptPath(from);
+		to = adaptPath(to);
 		final String apiUrl = getApiUrl("fileops/move");
 
 		WebResource r = getClient().resource(apiUrl).queryParam("root", "dropbox")
@@ -389,9 +386,7 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public String getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
-		if (path.startsWith("/")) {
-			path = path.substring(1);
-		}
+		path = adaptPath(path);
 		final String apiUrl = getApiUrl("shares/dropbox");
 		
 		WebResource r = getClient().resource(apiUrl).path(path).queryParam("short_url", shortUrl.toString());
@@ -516,6 +511,13 @@ public class DropboxConnector {
 
 	public void setAccessTokenSecret(String accessTokenSecret) {
 		this.accessTokenSecret = accessTokenSecret;
+	}
+
+	private String adaptPath(String path) {
+		if (path.startsWith("/")) {
+			path = path.substring(1);
+		}
+		return path;
 	}
 	
 	

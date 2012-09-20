@@ -16,7 +16,6 @@
 	</parent>
 
 	<properties>
-		<mule.version>3.3.0</mule.version>
 		<junit.version>4.9</junit.version>
 		<mockito.version>1.8.2</mockito.version>
 		<jdk.version>1.6</jdk.version>
