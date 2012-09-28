@@ -13,16 +13,6 @@
  */
 package com.mulesoft.module.dropbox;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.ws.rs.core.MediaType;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
@@ -47,9 +37,20 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 import com.sun.jersey.oauth.client.OAuthClientFilter;
-import com.sun.jersey.oauth.signature.HMAC_SHA1;
 import com.sun.jersey.oauth.signature.OAuthParameters;
 import com.sun.jersey.oauth.signature.OAuthSecrets;
+import com.sun.jersey.oauth.signature.PLAINTEXT;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 /**
  * Dropbox Cloud Connector.
@@ -450,8 +451,7 @@ public class DropboxConnector {
 	public void setDebug(boolean debug) {
 		this.debug = debug;
 	}
-
-	// --------------------------------------------------
+	
 	/**
 	 * @param path
 	 *            path without leading /
@@ -480,7 +480,7 @@ public class DropboxConnector {
 	
 	protected OAuthClientFilter getOAuthClientFilter(String accessToken, String accessTokenSecret) {
         OAuthParameters params = new OAuthParameters()
-                .signatureMethod(HMAC_SHA1.NAME)
+                .signatureMethod(PLAINTEXT.NAME)
                 .consumerKey(getAppKey())
                 .token(accessToken).version();
 
