@@ -57,6 +57,12 @@
 			<artifactId>oauth-signature</artifactId>
 			<version>1.1.1-ea</version>
 		</dependency>
+		<dependency>
+                   <groupId>eclipse</groupId>
+                   <artifactId>eclipse-runtime</artifactId>
+                   <version>2.1.0</version>
+                   <scope>provided</scope>
+                </dependency>
 	</dependencies>
 
 	<repositories>
@@ -80,3 +86,4 @@
 		<url>https://github.com/mulesoft/dropbox-connector</url>
 	</scm>
 </project>
+
