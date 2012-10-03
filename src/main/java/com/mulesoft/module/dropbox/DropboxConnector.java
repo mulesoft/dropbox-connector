@@ -42,6 +42,8 @@ import com.sun.jersey.oauth.signature.OAuthSecrets;
 import com.sun.jersey.oauth.signature.PLAINTEXT;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,8 +61,15 @@ import org.json.simple.JSONValue;
  * @author MuleSoft, Inc.
  */
 @Connector(name = "dropbox", schemaVersion = "3.2.2", friendlyName = "Dropbox")
-@OAuth(requestTokenUrl = "https://api.dropbox.com/1/oauth/request_token", accessTokenUrl = "https://api.dropbox.com/1/oauth/access_token", authorizationUrl = "https://www.dropbox.com/1/oauth/authorize", verifierRegex = "oauth_token=([^&]+)")
+@OAuth(requestTokenUrl = "https://api.dropbox.com/1/oauth/request_token", 
+accessTokenUrl = "https://api.dropbox.com/1/oauth/access_token", 
+authorizationUrl = "https://www.dropbox.com/1/oauth/authorize", verifierRegex = "oauth_token=([^&]+)")
 public class DropboxConnector {
+    
+    private static final String API_VERSION = "1";
+    private static final String ROOT_PARAM = "dropbox";
+    private static final String API_CONTENT_URL = "files/" + ROOT_PARAM;
+    
 	/**
 	 * URL of the Dropbox server API
 	 */
@@ -139,7 +148,8 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-	@Processor
+	@SuppressWarnings("resource")
+    @Processor
 	@OAuthProtected
 	public String uploadFile(@Payload InputStream fileDataObj,
 							@Optional @Default("true") Boolean overwrite,
@@ -148,8 +158,6 @@ public class DropboxConnector {
 		
 		final InputStream fileData = (InputStream) fileDataObj;
 
-		path = adaptPath(path);
-		
 		final String apiUrl = getApiContentUrl(path);
 
 		final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(fileData, MediaType.APPLICATION_OCTET_STREAM_TYPE);
@@ -161,10 +169,9 @@ public class DropboxConnector {
 				.size(fileData.available())
 				.modificationDate(new Date()).build());
 
-		WebResource r = getClient().resource(apiUrl)
-													.queryParam("file",	filename)
-													.queryParam("overwrite", overwrite.toString());
-
+		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, 
+                String.format("file=%s&overwrite=%s", filename, overwrite.toString())));
+		
 		if (isDebug()) {
 			r.addFilter(new LoggingFilter());
 		}
@@ -195,17 +202,16 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public String createFolder(String path) throws Exception {
-		final String apiUrl = getApiUrl("fileops/create_folder");
+		final String apiUrl = "fileops/create_folder";
 
-		WebResource r = getClient().resource(apiUrl);
-		r.accept(MediaType.APPLICATION_JSON_TYPE).type(
-				MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-		r = r.queryParam("root", "dropbox").queryParam("path", path);
-
+		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
+		        String.format("root=%s&path=%s", ROOT_PARAM, path)));
+		
 		if (isDebug()) {
 			r.addFilter(new LoggingFilter());
 		}
 		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+
 		String response = r.post(String.class);
 
 		return response;
@@ -230,12 +236,12 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public String delete(String path) throws Exception {
-		final String apiUrl = getApiUrl("fileops/delete");
+		final String apiUrl = "fileops/delete";
 
-		WebResource r = getClient().resource(apiUrl);
+		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
+		        String.format("root=%s&path=%s", ROOT_PARAM, path)));
 		r.accept(MediaType.APPLICATION_JSON_TYPE).type(
 				MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-		r = r.queryParam("root", "dropbox").queryParam("path", path);
 
 		if (isDebug()) {
 			r.addFilter(new LoggingFilter());
@@ -273,10 +279,9 @@ public class DropboxConnector {
 	@OAuthProtected
 	public InputStream downloadFile(String path,
 			@Optional @Default("false") boolean delete) throws Exception {
-		path = adaptPath(path);
 		final String apiUrl = getApiContentUrl(path);
 
-		WebResource r = getClient().resource(apiUrl);
+		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, ""));
 
 		if (isDebug()) {
 			r.addFilter(new LoggingFilter());
@@ -309,9 +314,9 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public List<String> list(String path) throws Exception {
-		final String apiUrl = getApiUrl("metadata/dropbox");
+		final String apiUrl = "metadata/dropbox/" + adaptPath(path);
 
-		WebResource r = getClient().resource(apiUrl).path(path);
+		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, ""));
 
 		if (isDebug()) {
 			r.addFilter(new LoggingFilter());
@@ -356,10 +361,10 @@ public class DropboxConnector {
 	public String move(String from, String to, @Optional @Default("true") boolean deleteFromSrc) throws Exception {
 		from = adaptPath(from);
 		to = adaptPath(to);
-		final String apiUrl = getApiUrl("fileops/move");
+		final String apiUrl = "fileops/move";
 
-		WebResource r = getClient().resource(apiUrl).queryParam("root", "dropbox")
-				.queryParam("from_path", from).queryParam("to_path", to);
+		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
+		        String.format("root=%s&from_path=%s&to_path=%s", ROOT_PARAM, from, to)));
 
 		if (isDebug()) {
 			r.addFilter(new LoggingFilter());
@@ -388,9 +393,10 @@ public class DropboxConnector {
 	@OAuthProtected
 	public String getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
 		path = adaptPath(path);
-		final String apiUrl = getApiUrl("shares/dropbox");
+		final String apiUrl = "shares/dropbox/" + adaptPath(path);
 		
-		WebResource r = getClient().resource(apiUrl).path(path).queryParam("short_url", shortUrl.toString());
+		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
+		        String.format("short_url=%s", shortUrl.toString())));
 		
 		if (isDebug()) {
 			r.addFilter(new LoggingFilter());
@@ -454,19 +460,9 @@ public class DropboxConnector {
 	
 	/**
 	 * @param path
-	 *            path without leading /
-	 */
-	protected String getApiUrl(String path) {
-		return String.format("%s://%s/1/%s", "https", getServer(), path);
-	}
-
-	/**
-	 * @param path
-	 *            path without leading /
 	 */
 	protected String getApiContentUrl(String path) {
-		return String.format("%s://%s/1/files/dropbox/%s", "https",
-				getContentServer(), path);
+	    return API_CONTENT_URL + "/" + adaptPath(path);
 	}
 
 	protected Client getClient() {
@@ -520,5 +516,9 @@ public class DropboxConnector {
 		return path;
 	}
 	
-	
+	private URI constructUri(String server, String apiUrl, String params) 
+	        throws URISyntaxException {
+	    String path = String.format("/%s/%s", API_VERSION, apiUrl);
+        return new URI("https", server, path, params, null);
+	}
 }
