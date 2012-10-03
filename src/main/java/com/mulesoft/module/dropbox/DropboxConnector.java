@@ -358,7 +358,7 @@ public class DropboxConnector {
 	 */
 	@Processor
 	@OAuthProtected
-	public String move(String from, String to, @Optional @Default("true") boolean deleteFromSrc) throws Exception {
+	public String move(String from, String to) throws Exception {
 		from = adaptPath(from);
 		to = adaptPath(to);
 		final String apiUrl = "fileops/move";
@@ -373,8 +373,6 @@ public class DropboxConnector {
 
 		String response = r.post(String.class);
 
-		if ( deleteFromSrc)
-			delete(from);
 		return response;
 	}
 
