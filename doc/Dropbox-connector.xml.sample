@@ -19,6 +19,9 @@
 <!-- BEGIN_INCLUDE(dropbox:move) -->
     <dropbox:move from="foo/bar/test.txt" to="/home/user"/>
 <!-- END_INCLUDE(dropbox:move) -->
+<!-- BEGIN_INCLUDE(dropbox:copy) -->
+    <dropbox:copy from="foo/bar/test.txt" to="/home/user"/>
+<!-- END_INCLUDE(dropbox:copy) -->
 <!-- BEGIN_INCLUDE(dropbox:get-link) -->
     <dropbox:get-link path="/home/user"/>
 <!-- END_INCLUDE(dropbox:get-link) -->

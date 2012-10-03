@@ -350,8 +350,6 @@ public class DropboxConnector {
 	 *            Specifies the destination path, including the new name for the
 	 *            file or folder, relative to root.
 	 *            
-	 * @param deleteFromSrc boolean indicating if the file or folder should be deleted from source. If false, this method will work as a copy.
-	 * 
 	 * @return http response
 	 * @throws Exception
 	 *             exception
@@ -375,6 +373,46 @@ public class DropboxConnector {
 
 		return response;
 	}
+	
+	/**
+     * Copies a file or folder to a new location.
+     * 
+     * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:copy}
+     * 
+     * @param accessToken
+     *            accessToken
+     * @param accessTokenSecret
+     *            access token secret
+     * @param from
+     *            Specifies the file or folder to be copied from, relative to
+     *            root.
+     * @param to
+     *            Specifies the destination path, including the new name for the
+     *            file or folder, relative to root.
+     *            
+     * @return http response
+     * @throws Exception
+     *             exception
+     */
+    @Processor
+    @OAuthProtected
+    public String copy(String from, String to) throws Exception {
+        from = adaptPath(from);
+        to = adaptPath(to);
+        final String apiUrl = "fileops/copy";
+
+        WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
+                String.format("root=%s&from_path=%s&to_path=%s", ROOT_PARAM, from, to)));
+
+        if (isDebug()) {
+            r.addFilter(new LoggingFilter());
+        }
+        r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+
+        String response = r.post(String.class);
+
+        return response;
+    }
 
 	/**
 	 * Creates and returns a Dropbox link to files or folders users can use to view a preview of the file in a web browser.
