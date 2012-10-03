@@ -81,9 +81,9 @@
 	</repositories>
 
 	<scm>
-		<connection>git@github.com:mulesoft/dropbox-connector.git</connection>
-		<developerConnection>git@github.com:mulesoft/dropbox-connector.git</developerConnection>
-		<url>https://github.com/mulesoft/dropbox-connector</url>
+		<connection>scm:git:git://github.com:mulesoft/dropbox-connector.git</connection>
+		<developerConnection>scm:git:git@github.com:mulesoft/dropbox-connector.git</developerConnection>
+		<url>http://github.com/mulesoft/dropbox-.git</url>
 	</scm>
 </project>
 
