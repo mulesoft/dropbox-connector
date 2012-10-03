@@ -21,6 +21,7 @@
 		<jdk.version>1.6</jdk.version>
 		<jersey.version>1.13</jersey.version>
 		<category>Community</category>
+		<licensePath>LICENSE.md</licensePath>
 		<devkit.studio.package.skip>false</devkit.studio.package.skip>
 	</properties>
 
