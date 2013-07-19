@@ -39,11 +39,9 @@ public class DropboxConnectorDriver
 
         DropboxConnector connector = new DropboxConnector();
         connector.setAccessToken(ACCESS_KEY);
-        connector.setAccessTokenSecret(ACCESS_SECRET);
         connector.setAppKey(APP_KEY);
         connector.setAppSecret(APP_SECRET);
         connector.setServer("api.dropbox.com");
-        connector.setDebug(true);
 
         List<String> list = connector.list("/My folder");
         System.out.println(Arrays.toString(list.toArray()));;

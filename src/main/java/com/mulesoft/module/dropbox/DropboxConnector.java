@@ -14,30 +14,21 @@ package com.mulesoft.module.dropbox;
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
-import org.mule.api.annotations.oauth.OAuth;
-import org.mule.api.annotations.oauth.OAuthAccessToken;
-import org.mule.api.annotations.oauth.OAuthAccessTokenSecret;
-import org.mule.api.annotations.oauth.OAuthConsumerKey;
-import org.mule.api.annotations.oauth.OAuthConsumerSecret;
-import org.mule.api.annotations.oauth.OAuthProtected;
+import org.mule.api.annotations.oauth.*;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.Optional;
 import org.mule.api.annotations.param.Payload;
+
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
-import com.sun.jersey.oauth.client.OAuthClientFilter;
-import com.sun.jersey.oauth.signature.OAuthParameters;
-import com.sun.jersey.oauth.signature.OAuthSecrets;
-import com.sun.jersey.oauth.signature.PLAINTEXT;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -58,16 +49,19 @@ import org.json.simple.JSONValue;
  * 
  * @author MuleSoft, Inc.
  */
-@Connector(name = "dropbox", schemaVersion = "3.2.2", friendlyName = "Dropbox")
-@OAuth(requestTokenUrl = "https://api.dropbox.com/1/oauth/request_token", 
-accessTokenUrl = "https://api.dropbox.com/1/oauth/access_token", 
-authorizationUrl = "https://www.dropbox.com/1/oauth/authorize", verifierRegex = "oauth_token=([^&]+)")
+@Connector(name = "dropbox", schemaVersion = "3.3.0", friendlyName = "Dropbox", minMuleVersion = "3.3")
+@OAuth2(authorizationUrl = "https://www.dropbox.com/1/oauth2/authorize",
+		accessTokenUrl = "https://api.dropbox.com/1/oauth2/token",
+        accessTokenRegex = "\"access_token\"[ ]*:[ ]*\"([^\\\"]*)\"",
+        expirationRegex = "\"expires_in\"[ ]*:[ ]*([\\d]*)",
+        refreshTokenRegex = "\"refresh_token\"[ ]*:[ ]*\"([^\\\"]*)\"")
 public class DropboxConnector {
-    
     private static final String API_VERSION = "1";
     private static final String ROOT_PARAM = "dropbox";
     private static final String API_CONTENT_URL = "files/" + ROOT_PARAM;
-    
+
+    private String accessTokenIdentifier;
+
 	/**
 	 * URL of the Dropbox server API
 	 */
@@ -79,7 +73,6 @@ public class DropboxConnector {
 	/**
 	 * URL of the Dropbox server content API
 	 */
-
 	@Configurable
 	@Optional
 	@Default("api-content.dropbox.com")
@@ -107,21 +100,19 @@ public class DropboxConnector {
 	@OAuthConsumerSecret
 	private String appSecret;
 
-	/**
-	 * debug mode
-	 */
-	@Configurable
-	@Optional
-	@Default("false")
-	private boolean debug;
-
 	@OAuthAccessToken
 	private String accessToken;
 
-	@OAuthAccessTokenSecret
-	private String accessTokenSecret;
-	
 	private Client client;
+
+    @OAuthAccessTokenIdentifier
+    public String getOAuthTokenAccessIdentifier() throws Exception {
+        if (this.accessTokenIdentifier == null) {
+            this.accessTokenIdentifier = this.getUserId();
+        }
+
+        return this.accessTokenIdentifier;
+    }
 
 	/**
 	 * Upload file to Dropbox. The payload is an InputStream containing bytes of
@@ -129,10 +120,6 @@ public class DropboxConnector {
 	 * 
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:upload-file}
 	 * 
-	 * @param accessToken
-	 *            accessToken
-	 * @param accessTokenSecret
-	 *            access token secret
 	 * @param fileDataObj
 	 *            file to be uploaded
 	 * @param overwrite
@@ -146,7 +133,7 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-	@SuppressWarnings("resource")
+//	@SuppressWarnings("resource")
     @Processor
 	@OAuthProtected
 	public String uploadFile(@Payload InputStream fileDataObj,
@@ -168,13 +155,8 @@ public class DropboxConnector {
 				.modificationDate(new Date()).build());
 
 		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, 
-                String.format("file=%s&overwrite=%s", filename, overwrite.toString())));
+                String.format("file=%s&overwrite=%s&access_token=%s", filename, overwrite.toString(), getAccessToken())));
 		
-		if (isDebug()) {
-			r.addFilter(new LoggingFilter());
-		}
-		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
-
 		String response = r.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(
 				String.class, parts);
 
@@ -186,10 +168,6 @@ public class DropboxConnector {
 	 * 
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:create-folder}
 	 * 
-	 * @param accessToken
-	 *            accessToken
-	 * @param accessTokenSecret
-	 *            access token secret
 	 * @param path
 	 *            full path of the folder to be created
 	 * 
@@ -203,13 +181,8 @@ public class DropboxConnector {
 		final String apiUrl = "fileops/create_folder";
 
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("root=%s&path=%s", ROOT_PARAM, path)));
+		        String.format("root=%s&path=%s&access_token=%s", ROOT_PARAM, path, getAccessToken())));
 		
-		if (isDebug()) {
-			r.addFilter(new LoggingFilter());
-		}
-		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
-
 		String response = r.post(String.class);
 
 		return response;
@@ -220,10 +193,6 @@ public class DropboxConnector {
 	 * 
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:delete}
 	 * 
-	 * @param accessToken
-	 *            accessToken
-	 * @param accessTokenSecret
-	 *            access token secret
 	 * @param path
 	 *            full path to the file to be deleted
 	 * 
@@ -237,14 +206,9 @@ public class DropboxConnector {
 		final String apiUrl = "fileops/delete";
 
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("root=%s&path=%s", ROOT_PARAM, path)));
+		        String.format("root=%s&path=%s&access_token=%s", ROOT_PARAM, path, getAccessToken())));
 		r.accept(MediaType.APPLICATION_JSON_TYPE).type(
 				MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-
-		if (isDebug()) {
-			r.addFilter(new LoggingFilter());
-		}
-		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
 
 		String response = r.post(String.class);
 
@@ -256,19 +220,12 @@ public class DropboxConnector {
 	 * 
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:download-file}
 	 * 
-	 * @param accessToken
-	 *            accessToken
-	 * @param accessTokenSecret
-	 *            access token secret
 	 * @param path
 	 *            path to the file
 	 * @param delete
 	 *            delete the file on the Dropbox after download (ignored if
 	 *            moveTo is set)
-	 * @param moveTo
-	 *            Specifies the destination path, including the new name for the
-	 *            file or folder, relative to root.
-	 * 
+	 *
 	 * @return Stream containing the downloaded file data
 	 * @throws Exception
 	 *             exception
@@ -279,12 +236,7 @@ public class DropboxConnector {
 			@Optional @Default("false") boolean delete) throws Exception {
 		final String apiUrl = getApiContentUrl(path);
 
-		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, ""));
-
-		if (isDebug()) {
-			r.addFilter(new LoggingFilter());
-		}
-		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
 
 		InputStream response = r.get(InputStream.class);
 
@@ -298,10 +250,6 @@ public class DropboxConnector {
 	 * 
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:list}
 	 * 
-	 * @param accessToken
-	 *            accessToken
-	 * @param accessTokenSecret
-	 *            access token secret
 	 * @param path
 	 *            path to the remote directory
 	 * 
@@ -314,12 +262,7 @@ public class DropboxConnector {
 	public List<String> list(String path) throws Exception {
 		final String apiUrl = "metadata/dropbox/" + adaptPath(path);
 
-		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, ""));
-
-		if (isDebug()) {
-			r.addFilter(new LoggingFilter());
-		}
-		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
 
 		String response = r.get(String.class);
 		final JSONObject root = (JSONObject) JSONValue.parse(response);
@@ -337,10 +280,6 @@ public class DropboxConnector {
 	 * 
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:move}
 	 * 
-	 * @param accessToken
-	 *            accessToken
-	 * @param accessTokenSecret
-	 *            access token secret
 	 * @param from
 	 *            Specifies the file or folder to be moved from, relative to
 	 *            root.
@@ -360,12 +299,7 @@ public class DropboxConnector {
 		final String apiUrl = "fileops/move";
 
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("root=%s&from_path=%s&to_path=%s", ROOT_PARAM, from, to)));
-
-		if (isDebug()) {
-			r.addFilter(new LoggingFilter());
-		}
-		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+		        String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
 
 		String response = r.post(String.class);
 
@@ -377,10 +311,6 @@ public class DropboxConnector {
      * 
      * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:copy}
      * 
-     * @param accessToken
-     *            accessToken
-     * @param accessTokenSecret
-     *            access token secret
      * @param from
      *            Specifies the file or folder to be copied from, relative to
      *            root.
@@ -400,12 +330,7 @@ public class DropboxConnector {
         final String apiUrl = "fileops/copy";
 
         WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-                String.format("root=%s&from_path=%s&to_path=%s", ROOT_PARAM, from, to)));
-
-        if (isDebug()) {
-            r.addFilter(new LoggingFilter());
-        }
-        r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+                String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
 
         String response = r.post(String.class);
 
@@ -430,17 +355,24 @@ public class DropboxConnector {
 		final String apiUrl = "shares/dropbox/" + adaptPath(path);
 		
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("short_url=%s", shortUrl.toString())));
-		
-		if (isDebug()) {
-			r.addFilter(new LoggingFilter());
-		}
-		r.addFilter(getOAuthClientFilter(accessToken, accessTokenSecret));
+		        String.format("short_url=%s&access_token=%s", shortUrl.toString(), getAccessToken())));
 		
 		String response = r.post(String.class);
 		
 		return response;
 	}
+
+    private String getUserId() throws Exception {
+        final String apiUrl = "account/info";
+
+        WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
+
+        String response = r.get(String.class);
+
+        final JSONObject root = (JSONObject) JSONValue.parse(response);
+        final String uid = root.get("uid").toString();
+        return uid;
+    }
 
 	// --------------------------------------
 
@@ -484,14 +416,6 @@ public class DropboxConnector {
 		this.appSecret = appSecret;
 	}
 
-	public boolean isDebug() {
-		return debug;
-	}
-
-	public void setDebug(boolean debug) {
-		this.debug = debug;
-	}
-	
 	/**
 	 * @param path
 	 */
@@ -508,39 +432,12 @@ public class DropboxConnector {
 		return client;
 	}
 	
-	protected OAuthClientFilter getOAuthClientFilter(String accessToken, String accessTokenSecret) {
-        OAuthParameters params = new OAuthParameters()
-                .signatureMethod(PLAINTEXT.NAME)
-                .consumerKey(getAppKey())
-                .token(accessToken).version();
-
-        OAuthSecrets secrets = new OAuthSecrets()
-                .consumerSecret(getAppSecret())
-                .tokenSecret(accessTokenSecret);
-
-        OAuthClientFilter filter = new OAuthClientFilter(
-                getClient().getProviders(),
-                params,
-                secrets
-        );        
-        
-        return filter;
-    }
-
 	public String getAccessToken() {
 		return accessToken;
 	}
 
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
-	}
-
-	public String getAccessTokenSecret() {
-		return accessTokenSecret;
-	}
-
-	public void setAccessTokenSecret(String accessTokenSecret) {
-		this.accessTokenSecret = accessTokenSecret;
 	}
 
 	private String adaptPath(String path) {
