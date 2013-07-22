@@ -11,7 +11,8 @@ import java.util.List;
  * LICENSE.md file.
  */
 public class Item implements Serializable {
-    public static final long serialVersionUID = -1L;
+    private static final long serialVersionUID = -1L;
+
     /*
         Represents metadata for a file, check DB docs at:
         https://www.dropbox.com/developers/core/docs#metadata

@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 
 public class AccountInformation implements Serializable {
-    public static final long serialVersionUID = -1L;
+    private static final long serialVersionUID = -1L;
 
     /*  This is the response to /account/info for V1 of Dropbox API
         See dropbox docs at https://www.dropbox.com/developers/core/docs#account-info

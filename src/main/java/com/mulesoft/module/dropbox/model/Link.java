@@ -1,5 +1,7 @@
 package com.mulesoft.module.dropbox.model;
 
+import java.io.Serializable;
+
 /**
  * Copyright (c) MuleSoft, Inc. All rights reserved. http://www.mulesoft.com
  *
@@ -7,7 +9,9 @@ package com.mulesoft.module.dropbox.model;
  * license, a copy of which has been included with this distribution in the
  * LICENSE.md file.
  */
-public class Link {
+public class Link implements Serializable {
+    private static final long serialVersionUID = -1L;
+
     /*  Represents a Dropbox share link: see doc at https://www.dropbox.com/developers/core/docs#shares
      *
      *  {
