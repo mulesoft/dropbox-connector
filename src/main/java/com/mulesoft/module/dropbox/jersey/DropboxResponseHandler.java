@@ -33,8 +33,9 @@ public class DropboxResponseHandler extends DefaultResponseHandler {
 		if (status == Status.UNAUTHORIZED.getStatusCode()) {
 			throw new DropboxTokenExpiredException();
 		}
-		
+
 		String json = response.getEntity(String.class);
-         throw new DropboxException(json);
+        System.out.println(json);
+        throw new DropboxException(json);
 	}
 }

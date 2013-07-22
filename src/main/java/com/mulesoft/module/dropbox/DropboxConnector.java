@@ -71,9 +71,7 @@ import org.mule.commons.jersey.provider.GsonProvider;
         expirationRegex = "\"expires_in\"[ ]*:[ ]*([\\d]*)",
         refreshTokenRegex = "\"refresh_token\"[ ]*:[ ]*\"([^\\\"]*)\"")
 public class DropboxConnector {
-    private static final String API_VERSION = "1";
     private static final String ROOT_PARAM = "dropbox";
-    private static final String API_CONTENT_URL = "files/" + ROOT_PARAM;
 
     private String accessTokenIdentifier;
 
@@ -82,7 +80,7 @@ public class DropboxConnector {
 	 */
 	@Configurable
 	@Optional
-	@Default("api.dropbox.com")
+	@Default("https://api.dropbox.com/1/")
 	private String server;
 
 	/**
@@ -90,7 +88,7 @@ public class DropboxConnector {
 	 */
 	@Configurable
 	@Optional
-	@Default("api-content.dropbox.com")
+	@Default("https://api-content.dropbox.com/1/files/dropbox")
 	private String contentServer;
 
 	/**
@@ -150,8 +148,8 @@ public class DropboxConnector {
 
         this.initJerseyUtil();
 
-        this.apiResource = client.resource("https://");
-        this.contentResource = contentClient.resource("https://");
+        this.apiResource = client.resource(this.server);
+        this.contentResource = contentClient.resource(this.contentServer);
     }
 
     private void initJerseyUtil() {
@@ -231,8 +229,15 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public Item createFolder(String path) throws Exception {
-        return this.jerseyUtil.post(
-                this.apiResource.path("fileops").path("create_folder").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200);
+
+        Item folder = this.jerseyUtil.post(
+                        this.apiResource.path("fileops").path("create_folder").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200, 403);
+
+        // A 403 response means that the folder already exists
+        if (folder.getPath() == null)
+            return this.list(path);
+
+        return folder;
 	}
 
 	/**
@@ -269,20 +274,18 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-//	@Processor
-//	@OAuthProtected
-//	public InputStream downloadFile(String path,
-//			@Optional @Default("false") boolean delete) throws Exception {
-//		final String apiUrl = getApiContentUrl(path);
-//
-//		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
-//
-//		InputStream response = r.get(InputStream.class);
-//
-//		if (delete)
-//			delete(path);
-//		return response;
-//	}
+	@Processor
+	@OAuthProtected
+	public InputStream downloadFile(String path,
+			@Optional @Default("false") boolean delete) throws Exception {
+
+        InputStream response = this.jerseyUtil.get(this.contentResource.path(adaptPath(path)), InputStream.class, 200);
+
+		if (delete)
+			delete(path);
+
+		return response;
+	}
 
 	/**
 	 * Lists the content of the remote directory
@@ -296,16 +299,14 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-//	@Processor
-//	@OAuthProtected
-//	public Item list(String path) throws Exception {
-//		final String apiUrl = "metadata/dropbox/" + adaptPath(path);
-//
-//		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
-//
-//		Item response = r.get(Item.class);
-//		return response;
-//	}
+	@Processor
+	@OAuthProtected
+	public Item list(String path) throws Exception {
+		final String apiPath = adaptPath(path);
+
+        return this.jerseyUtil.get(
+                this.apiResource.path("metadata").path("dropbox").path(apiPath), Item.class, 200);
+	}
 
 	/**
 	 * Moves a file or folder to a new location.
@@ -447,13 +448,6 @@ public class DropboxConnector {
 		this.appSecret = appSecret;
 	}
 
-	/**
-	 * @param path
-	 */
-	protected String getApiContentUrl(String path) {
-	    return API_CONTENT_URL + "/" + adaptPath(path);
-	}
-
 	public String getAccessToken() {
 		return accessToken;
 	}
@@ -467,11 +461,5 @@ public class DropboxConnector {
 			path = path.substring(1);
 		}
 		return path;
-	}
-	
-	private URI constructUri(String server, String apiUrl, String params) 
-	        throws URISyntaxException {
-	    String path = String.format("/%s/%s", API_VERSION, apiUrl);
-        return new URI("https", server, path, params, null);
 	}
 }
