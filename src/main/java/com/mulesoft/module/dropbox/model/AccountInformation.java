@@ -9,7 +9,6 @@ import java.io.Serializable;
  * license, a copy of which has been included with this distribution in the
  * LICENSE.md file.
  */
-
 public class AccountInformation implements Serializable {
     private static final long serialVersionUID = -1L;
 

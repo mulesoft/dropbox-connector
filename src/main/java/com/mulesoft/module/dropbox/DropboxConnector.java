@@ -11,23 +11,33 @@
  */
 package com.mulesoft.module.dropbox;
 
+import com.mulesoft.module.dropbox.jersey.AuthBuilderBehaviour;
+import com.mulesoft.module.dropbox.jersey.DropboxResponseHandler;
+import com.mulesoft.module.dropbox.jersey.MediaTypesBuilderBehaviour;
+import com.mulesoft.module.dropbox.jersey.json.GsonFactory;
 import com.mulesoft.module.dropbox.model.AccountInformation;
 import com.mulesoft.module.dropbox.model.Item;
 import com.mulesoft.module.dropbox.model.Link;
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
-import org.mule.api.annotations.oauth.*;
+import org.mule.api.annotations.lifecycle.Start;
+import org.mule.api.annotations.oauth.OAuth2;
+import org.mule.api.annotations.oauth.OAuthAccessToken;
+import org.mule.api.annotations.oauth.OAuthAccessTokenIdentifier;
+import org.mule.api.annotations.oauth.OAuthConsumerKey;
+import org.mule.api.annotations.oauth.OAuthConsumerSecret;
+import org.mule.api.annotations.oauth.OAuthProtected;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.Optional;
 import org.mule.api.annotations.param.Payload;
-
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.MultiPart;
@@ -36,15 +46,17 @@ import com.sun.jersey.multipart.impl.MultiPartWriter;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import org.mule.api.MuleException;
+import com.sun.jersey.core.impl.provider.entity.FormMultivaluedMapProvider;
+import com.sun.jersey.core.impl.provider.entity.FormProvider;
+import com.sun.jersey.core.impl.provider.entity.InputStreamProvider;
+import com.sun.jersey.core.impl.provider.entity.MimeMultipartProvider;
+import org.mule.commons.jersey.JerseyUtil;
+import org.mule.commons.jersey.provider.GsonProvider;
 
 /**
  * Dropbox Cloud Connector.
@@ -106,7 +118,48 @@ public class DropboxConnector {
 	@OAuthAccessToken
 	private String accessToken;
 
-	private Client client;
+    private JerseyUtil jerseyUtil;
+
+    private WebResource apiResource;
+
+    private WebResource contentResource;
+
+    /**
+     * This method initiaes the box client and the auth callback. Also, it
+     * fetches the save/restore flows (if specified). If those are specified but
+     * don't exist in the registry, then IllegalArgumentException is thrown
+     *
+     * @throws MuleException
+     * @throws IllegalArgumentException
+     *             if restore/save token flows are specified but don't exist
+     */
+    @Start
+    public void init() throws MuleException {
+        ClientConfig clientConfig = new DefaultClientConfig();
+        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        clientConfig.getClasses().add(MultiPartWriter.class);
+        clientConfig.getClasses().add(MimeMultipartProvider.class);
+        clientConfig.getClasses().add(InputStreamProvider.class);
+        clientConfig.getClasses().add(FormProvider.class);
+        clientConfig.getClasses().add(FormMultivaluedMapProvider.class);
+        clientConfig.getSingletons().add(new GsonProvider(GsonFactory.get()));
+
+        Client client = Client.create(clientConfig);
+        Client contentClient = Client.create(clientConfig);
+        contentClient.setChunkedEncodingSize(512);
+
+        this.initJerseyUtil();
+
+        this.apiResource = client.resource("https://");
+        this.contentResource = contentClient.resource("https://");
+    }
+
+    private void initJerseyUtil() {
+        JerseyUtil.Builder builder = JerseyUtil.builder().addRequestBehaviour(MediaTypesBuilderBehaviour.INSTANCE)
+                .addRequestBehaviour(new AuthBuilderBehaviour(this)).setResponseHandler(DropboxResponseHandler.INSTANCE);
+
+        this.jerseyUtil = builder.build();
+    }
 
     @OAuthAccessTokenIdentifier
     public String getOAuthTokenAccessIdentifier() throws Exception {
@@ -136,34 +189,32 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-	@SuppressWarnings("resource")
-    @Processor
-	@OAuthProtected
-	public Item uploadFile(@Payload InputStream fileDataObj,
-							@Optional @Default("true") Boolean overwrite,
-							String path,
-							String filename) throws Exception {
-		
-		final InputStream fileData = (InputStream) fileDataObj;
-
-		final String apiUrl = getApiContentUrl(path);
-
-		final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(fileData, MediaType.APPLICATION_OCTET_STREAM_TYPE);
-		MultiPart parts = new FormDataMultiPart().bodyPart(formDataBodyPart);
-
-		formDataBodyPart.setContentDisposition(FormDataContentDisposition
-				.name("file")
-				.fileName(filename)
-				.size(fileData.available())
-				.modificationDate(new Date()).build());
-
-		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, 
-                String.format("file=%s&overwrite=%s&access_token=%s", filename, overwrite.toString(), getAccessToken())));
-		
-		Item response = r.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(Item.class, parts);
-
-		return response;
-	}
+//	@SuppressWarnings("resource")
+//    @Processor
+//	@OAuthProtected
+//	public Item uploadFile(@Payload InputStream fileDataObj,
+//							@Optional @Default("true") Boolean overwrite,
+//							String path,
+//							String filename) throws Exception {
+//
+//		final InputStream fileData = (InputStream) fileDataObj;
+//
+//		final String apiUrl = getApiContentUrl(path);
+//
+//		final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(fileData, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+//		MultiPart parts = new FormDataMultiPart().bodyPart(formDataBodyPart);
+//
+//		formDataBodyPart.setContentDisposition(FormDataContentDisposition
+//				.name("file")
+//				.fileName(filename)
+//				.size(fileData.available())
+//				.modificationDate(new Date()).build());
+//
+//		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl,
+//                String.format("file=%s&overwrite=%s&access_token=%s", filename, overwrite.toString(), getAccessToken())));
+//
+//        return r.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(Item.class, parts);
+//	}
 
 	/**
 	 * Create new folder on Dropbox
@@ -180,14 +231,8 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public Item createFolder(String path) throws Exception {
-		final String apiUrl = "fileops/create_folder";
-
-		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("root=%s&path=%s&access_token=%s", ROOT_PARAM, path, getAccessToken())));
-		
-		Item response = r.post(Item.class);
-
-		return response;
+        return this.jerseyUtil.post(
+                this.apiResource.path("fileops").path("create_folder").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200);
 	}
 
 	/**
@@ -205,16 +250,8 @@ public class DropboxConnector {
 	@Processor
 	@OAuthProtected
 	public Item delete(String path) throws Exception {
-		final String apiUrl = "fileops/delete";
-
-		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("root=%s&path=%s&access_token=%s", ROOT_PARAM, path, getAccessToken())));
-		r.accept(MediaType.APPLICATION_JSON_TYPE).type(
-				MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-
-		Item response = r.post(Item.class);
-
-		return response;
+        return this.jerseyUtil.post(
+                this.apiResource.path("fileops").path("delete").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200);
 	}
 
 	/**
@@ -232,20 +269,20 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-	@Processor
-	@OAuthProtected
-	public InputStream downloadFile(String path,
-			@Optional @Default("false") boolean delete) throws Exception {
-		final String apiUrl = getApiContentUrl(path);
-
-		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
-
-		InputStream response = r.get(InputStream.class);
-
-		if (delete)
-			delete(path);
-		return response;
-	}
+//	@Processor
+//	@OAuthProtected
+//	public InputStream downloadFile(String path,
+//			@Optional @Default("false") boolean delete) throws Exception {
+//		final String apiUrl = getApiContentUrl(path);
+//
+//		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
+//
+//		InputStream response = r.get(InputStream.class);
+//
+//		if (delete)
+//			delete(path);
+//		return response;
+//	}
 
 	/**
 	 * Lists the content of the remote directory
@@ -259,16 +296,16 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-	@Processor
-	@OAuthProtected
-	public Item list(String path) throws Exception {
-		final String apiUrl = "metadata/dropbox/" + adaptPath(path);
-
-		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
-
-		Item response = r.get(Item.class);
-		return response;
-	}
+//	@Processor
+//	@OAuthProtected
+//	public Item list(String path) throws Exception {
+//		final String apiUrl = "metadata/dropbox/" + adaptPath(path);
+//
+//		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
+//
+//		Item response = r.get(Item.class);
+//		return response;
+//	}
 
 	/**
 	 * Moves a file or folder to a new location.
@@ -286,20 +323,20 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-	@Processor
-	@OAuthProtected
-	public Item move(String from, String to) throws Exception {
-		from = adaptPath(from);
-		to = adaptPath(to);
-		final String apiUrl = "fileops/move";
-
-		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
-
-		Item response = r.post(Item.class);
-
-		return response;
-	}
+//	@Processor
+//	@OAuthProtected
+//	public Item move(String from, String to) throws Exception {
+//		from = adaptPath(from);
+//		to = adaptPath(to);
+//		final String apiUrl = "fileops/move";
+//
+//		WebResource r = getClient().resource(constructUri(getServer(), apiUrl,
+//		        String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
+//
+//		Item response = r.post(Item.class);
+//
+//		return response;
+//	}
 	
 	/**
      * Copies a file or folder to a new location.
@@ -317,20 +354,20 @@ public class DropboxConnector {
      * @throws Exception
      *             exception
      */
-    @Processor
-    @OAuthProtected
-    public Item copy(String from, String to) throws Exception {
-        from = adaptPath(from);
-        to = adaptPath(to);
-        final String apiUrl = "fileops/copy";
-
-        WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-                String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
-
-        Item response = r.post(Item.class);
-
-        return response;
-    }
+//    @Processor
+//    @OAuthProtected
+//    public Item copy(String from, String to) throws Exception {
+//        from = adaptPath(from);
+//        to = adaptPath(to);
+//        final String apiUrl = "fileops/copy";
+//
+//        WebResource r = getClient().resource(constructUri(getServer(), apiUrl,
+//                String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
+//
+//        Item response = r.post(Item.class);
+//
+//        return response;
+//    }
 
 	/**
 	 * Creates and returns a Dropbox link to files or folders users can use to view a preview of the file in a web browser.
@@ -347,14 +384,9 @@ public class DropboxConnector {
 	@OAuthProtected
 	public Link getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
 		path = adaptPath(path);
-		final String apiUrl = "shares/dropbox/" + adaptPath(path);
-		
-		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
-		        String.format("short_url=%s&access_token=%s", shortUrl.toString(), getAccessToken())));
-		
-		Link response = r.post(Link.class);
-		
-		return response;
+
+        return this.jerseyUtil.get(
+                this.apiResource.path("shares").path("dropbox").path(path).queryParam("short_url", shortUrl.toString()), Link.class, 200);
 	}
 
     /**
@@ -369,13 +401,8 @@ public class DropboxConnector {
     @Processor
     @OAuthProtected
     public AccountInformation getAccount() throws Exception {
-        final String apiUrl = "account/info";
-
-        WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
-
-        AccountInformation response = r.get(AccountInformation.class);
-
-        return response;
+        return this.jerseyUtil.get(
+                this.apiResource.path("account").path("info"), AccountInformation.class, 200);
     }
 
 	// --------------------------------------
@@ -427,15 +454,6 @@ public class DropboxConnector {
 	    return API_CONTENT_URL + "/" + adaptPath(path);
 	}
 
-	protected Client getClient() {
-		if (client == null) {
-			ClientConfig cc = new DefaultClientConfig();
-			cc.getClasses().add(MultiPartWriter.class);
-			client = Client.create(cc);
-		}
-		return client;
-	}
-	
 	public String getAccessToken() {
 		return accessToken;
 	}
