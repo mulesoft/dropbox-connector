@@ -324,20 +324,16 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-//	@Processor
-//	@OAuthProtected
-//	public Item move(String from, String to) throws Exception {
-//		from = adaptPath(from);
-//		to = adaptPath(to);
-//		final String apiUrl = "fileops/move";
-//
-//		WebResource r = getClient().resource(constructUri(getServer(), apiUrl,
-//		        String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
-//
-//		Item response = r.post(Item.class);
-//
-//		return response;
-//	}
+	@Processor
+	@OAuthProtected
+	public Item move(String from, String to) throws Exception {
+        return this.jerseyUtil.post(
+                this.apiResource.path("fileops")
+                                .path("move")
+                                .queryParam("root", ROOT_PARAM)
+                                .queryParam("from_path", adaptPath(from))
+                                .queryParam("to_path", adaptPath(to)), Item.class, 200);
+	}
 	
 	/**
      * Copies a file or folder to a new location.
@@ -355,20 +351,16 @@ public class DropboxConnector {
      * @throws Exception
      *             exception
      */
-//    @Processor
-//    @OAuthProtected
-//    public Item copy(String from, String to) throws Exception {
-//        from = adaptPath(from);
-//        to = adaptPath(to);
-//        final String apiUrl = "fileops/copy";
-//
-//        WebResource r = getClient().resource(constructUri(getServer(), apiUrl,
-//                String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
-//
-//        Item response = r.post(Item.class);
-//
-//        return response;
-//    }
+    @Processor
+    @OAuthProtected
+    public Item copy(String from, String to) throws Exception {
+        return this.jerseyUtil.post(
+                this.apiResource.path("fileops")
+                                .path("copy")
+                                .queryParam("root", ROOT_PARAM)
+                                .queryParam("from_path", adaptPath(from))
+                                .queryParam("to_path", adaptPath(to)), Item.class, 200);
+    }
 
 	/**
 	 * Creates and returns a Dropbox link to files or folders users can use to view a preview of the file in a web browser.
