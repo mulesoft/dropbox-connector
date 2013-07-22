@@ -16,6 +16,9 @@
 <!-- BEGIN_INCLUDE(dropbox:list) -->
     <dropbox:list path="foo/bar"/>
 <!-- END_INCLUDE(dropbox:list) -->
+<!-- BEGIN_INCLUDE(dropbox:list-path) -->
+    <dropbox:list-path path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:list-path) -->
 <!-- BEGIN_INCLUDE(dropbox:move) -->
     <dropbox:move from="foo/bar/test.txt" to="/home/user"/>
 <!-- END_INCLUDE(dropbox:move) -->
@@ -25,5 +28,6 @@
 <!-- BEGIN_INCLUDE(dropbox:get-link) -->
     <dropbox:get-link path="/home/user"/>
 <!-- END_INCLUDE(dropbox:get-link) -->
-
- 
+<!-- BEGIN_INCLUDE(dropbox:get-account) -->
+     <dropbox:get-account/>
+<!-- END_INCLUDE(dropbox:get-account) -->

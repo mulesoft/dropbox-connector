@@ -11,6 +11,9 @@
  */
 package com.mulesoft.module.dropbox;
 
+import com.mulesoft.module.dropbox.model.AccountInformation;
+import com.mulesoft.module.dropbox.model.Item;
+import com.mulesoft.module.dropbox.model.Link;
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
@@ -108,7 +111,7 @@ public class DropboxConnector {
     @OAuthAccessTokenIdentifier
     public String getOAuthTokenAccessIdentifier() throws Exception {
         if (this.accessTokenIdentifier == null) {
-            this.accessTokenIdentifier = this.getUserId();
+            this.accessTokenIdentifier = this.getAccount().getUid();
         }
 
         return this.accessTokenIdentifier;
@@ -133,10 +136,10 @@ public class DropboxConnector {
 	 * @throws Exception
 	 *             exception
 	 */
-//	@SuppressWarnings("resource")
+	@SuppressWarnings("resource")
     @Processor
 	@OAuthProtected
-	public String uploadFile(@Payload InputStream fileDataObj,
+	public Item uploadFile(@Payload InputStream fileDataObj,
 							@Optional @Default("true") Boolean overwrite,
 							String path,
 							String filename) throws Exception {
@@ -157,8 +160,7 @@ public class DropboxConnector {
 		WebResource r = getClient().resource(constructUri(getContentServer(), apiUrl, 
                 String.format("file=%s&overwrite=%s&access_token=%s", filename, overwrite.toString(), getAccessToken())));
 		
-		String response = r.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(
-				String.class, parts);
+		Item response = r.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(Item.class, parts);
 
 		return response;
 	}
@@ -177,13 +179,13 @@ public class DropboxConnector {
 	 */
 	@Processor
 	@OAuthProtected
-	public String createFolder(String path) throws Exception {
+	public Item createFolder(String path) throws Exception {
 		final String apiUrl = "fileops/create_folder";
 
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
 		        String.format("root=%s&path=%s&access_token=%s", ROOT_PARAM, path, getAccessToken())));
 		
-		String response = r.post(String.class);
+		Item response = r.post(Item.class);
 
 		return response;
 	}
@@ -202,7 +204,7 @@ public class DropboxConnector {
 	 */
 	@Processor
 	@OAuthProtected
-	public String delete(String path) throws Exception {
+	public Item delete(String path) throws Exception {
 		final String apiUrl = "fileops/delete";
 
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
@@ -210,7 +212,7 @@ public class DropboxConnector {
 		r.accept(MediaType.APPLICATION_JSON_TYPE).type(
 				MediaType.APPLICATION_FORM_URLENCODED_TYPE);
 
-		String response = r.post(String.class);
+		Item response = r.post(Item.class);
 
 		return response;
 	}
@@ -259,20 +261,13 @@ public class DropboxConnector {
 	 */
 	@Processor
 	@OAuthProtected
-	public List<String> list(String path) throws Exception {
+	public Item list(String path) throws Exception {
 		final String apiUrl = "metadata/dropbox/" + adaptPath(path);
 
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
 
-		String response = r.get(String.class);
-		final JSONObject root = (JSONObject) JSONValue.parse(response);
-		final JSONArray files = (JSONArray) root.get("contents");
-		List<String> paths = new ArrayList<String>(files.size());
-		for (int i = 0; i < files.size(); i++) {
-			JSONObject file = (JSONObject) files.get(i);
-			paths.add(file.get("path").toString());
-		}
-		return paths;
+		Item response = r.get(Item.class);
+		return response;
 	}
 
 	/**
@@ -293,7 +288,7 @@ public class DropboxConnector {
 	 */
 	@Processor
 	@OAuthProtected
-	public String move(String from, String to) throws Exception {
+	public Item move(String from, String to) throws Exception {
 		from = adaptPath(from);
 		to = adaptPath(to);
 		final String apiUrl = "fileops/move";
@@ -301,7 +296,7 @@ public class DropboxConnector {
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
 		        String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
 
-		String response = r.post(String.class);
+		Item response = r.post(Item.class);
 
 		return response;
 	}
@@ -324,7 +319,7 @@ public class DropboxConnector {
      */
     @Processor
     @OAuthProtected
-    public String copy(String from, String to) throws Exception {
+    public Item copy(String from, String to) throws Exception {
         from = adaptPath(from);
         to = adaptPath(to);
         final String apiUrl = "fileops/copy";
@@ -332,7 +327,7 @@ public class DropboxConnector {
         WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
                 String.format("root=%s&from_path=%s&to_path=%s&access_token=%s", ROOT_PARAM, from, to, getAccessToken())));
 
-        String response = r.post(String.class);
+        Item response = r.post(Item.class);
 
         return response;
     }
@@ -350,28 +345,37 @@ public class DropboxConnector {
 	 */
 	@Processor
 	@OAuthProtected
-	public String getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
+	public Link getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
 		path = adaptPath(path);
 		final String apiUrl = "shares/dropbox/" + adaptPath(path);
 		
 		WebResource r = getClient().resource(constructUri(getServer(), apiUrl, 
 		        String.format("short_url=%s&access_token=%s", shortUrl.toString(), getAccessToken())));
 		
-		String response = r.post(String.class);
+		Link response = r.post(Link.class);
 		
 		return response;
 	}
 
-    private String getUserId() throws Exception {
+    /**
+     * Requests the account's information.
+     *
+     * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:get-account}
+     *
+     * @return String. A Dropbox's account information link to the given path.
+     *
+     * @throws Exception exception
+     */
+    @Processor
+    @OAuthProtected
+    public AccountInformation getAccount() throws Exception {
         final String apiUrl = "account/info";
 
         WebResource r = getClient().resource(constructUri(getServer(), apiUrl, String.format("access_token=%s", getAccessToken())));
 
-        String response = r.get(String.class);
+        AccountInformation response = r.get(AccountInformation.class);
 
-        final JSONObject root = (JSONObject) JSONValue.parse(response);
-        final String uid = root.get("uid").toString();
-        return uid;
+        return response;
     }
 
 	// --------------------------------------
