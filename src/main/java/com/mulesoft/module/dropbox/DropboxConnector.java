@@ -132,7 +132,7 @@ public class DropboxConnector {
 	 * @param filename
 	 *            The destination file name
 	 * 
-	 * @return http response
+	 * @return Item with the metadata of the uploaded object
 	 * @throws Exception
 	 *             exception
 	 */
@@ -173,7 +173,7 @@ public class DropboxConnector {
 	 * @param path
 	 *            full path of the folder to be created
 	 * 
-	 * @return http response
+	 * @return Item with the metadata of the created folder
 	 * @throws Exception
 	 *             exception
 	 */
@@ -198,7 +198,7 @@ public class DropboxConnector {
 	 * @param path
 	 *            full path to the file to be deleted
 	 * 
-	 * @return http response
+	 * @return Item with the metadata of the deleted object
 	 * @throws Exception
 	 *             exception
 	 */
@@ -282,7 +282,7 @@ public class DropboxConnector {
 	 *            Specifies the destination path, including the new name for the
 	 *            file or folder, relative to root.
 	 *            
-	 * @return http response
+	 * @return Item with the metadata of the moved object
 	 * @throws Exception
 	 *             exception
 	 */
@@ -313,7 +313,7 @@ public class DropboxConnector {
      *            Specifies the destination path, including the new name for the
      *            file or folder, relative to root.
      *            
-     * @return http response
+     * @return Item with the metadata of the copied object
      * @throws Exception
      *             exception
      */
@@ -339,7 +339,7 @@ public class DropboxConnector {
 	 * 
 	 * @param path The path to the file or folder you want to link to.
 	 * @param shortUrl Boolean indicating if the url returned will be shortened using the Dropbox url shortener (when true) or will link directly to the file's preview page (when false).
-	 * @return String. A Dropbox link to the given path.
+	 * @return Link. A Dropbox link to the given path.
 	 * 
 	 * @throws Exception exception
 	 */
@@ -362,7 +362,7 @@ public class DropboxConnector {
      *
      * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:get-account}
      *
-     * @return String. A Dropbox's account information link to the given path.
+     * @return AccountInformation. A Dropbox account's information.
      *
      * @throws Exception exception
      */
