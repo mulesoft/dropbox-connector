@@ -8,12 +8,14 @@
 
 package com.mulesoft.module.dropbox;
 
+import com.mulesoft.module.dropbox.exception.DropboxException;
 import com.mulesoft.module.dropbox.exception.DropboxTokenExpiredException;
 import com.mulesoft.module.dropbox.jersey.AuthBuilderBehaviour;
 import com.mulesoft.module.dropbox.jersey.DropboxResponseHandler;
 import com.mulesoft.module.dropbox.jersey.MediaTypesBuilderBehaviour;
 import com.mulesoft.module.dropbox.jersey.json.GsonFactory;
 import com.mulesoft.module.dropbox.model.AccountInformation;
+import com.mulesoft.module.dropbox.model.Chunk;
 import com.mulesoft.module.dropbox.model.Item;
 import com.mulesoft.module.dropbox.model.Link;
 
@@ -32,6 +34,9 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
@@ -45,6 +50,7 @@ import org.mule.api.MuleException;
 import org.mule.commons.jersey.JerseyUtil;
 import org.mule.commons.jersey.provider.GsonProvider;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Date;
 import javax.ws.rs.core.MediaType;
@@ -64,6 +70,8 @@ import javax.ws.rs.core.MediaType;
 public class DropboxConnector {
     private static final String ROOT_PARAM = "dropbox";
 
+    private static final int MAX_UPLOAD_BUFFER_LEN = 4194304;
+
     private String accessTokenIdentifier;
 
 	/**
@@ -79,7 +87,7 @@ public class DropboxConnector {
 	 */
 	@Configurable
 	@Optional
-	@Default("https://api-content.dropbox.com/1/files/" + ROOT_PARAM)
+	@Default("https://api-content.dropbox.com/1/")
 	private String contentServer;
 
 	/**
@@ -155,6 +163,8 @@ public class DropboxConnector {
 	/**
 	 * Upload file to Dropbox. The payload is an InputStream containing bytes of
 	 * the data to be uploaded.
+     *
+     * You can upload files of up to 150MB with this method. Use upload-long-stream for larger files
 	 * 
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:upload-stream}
 	 * 
@@ -191,6 +201,8 @@ public class DropboxConnector {
 
         WebResource.Builder r = this
                             .contentResource
+                            .path("files")
+                            .path(ROOT_PARAM)
                             .path(adaptPath(path))
                             .queryParam("overwrite", overwrite.toString())
                             .entity(parts)
@@ -393,6 +405,92 @@ public class DropboxConnector {
     public AccountInformation getAccount() throws Exception {
         return this.jerseyUtil.get(
                 this.apiResource.path("account").path("info"), AccountInformation.class, 200);
+    }
+
+
+    /**
+     * Upload file to Dropbox. The payload is an InputStream containing bytes of
+     * the data to be uploaded.
+     *
+     * This version of the method supports streams of arbitrary length
+     *
+     * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:upload-long-stream}
+     *
+     * @param fileData
+     *            file to be uploaded
+     * @param overwrite
+     * 				overwrite file in case it already exists
+     * @param path
+     *            The destination path
+     * @param filename
+     *            The destination file name
+     *
+     * @return Item with the metadata of the uploaded object
+     * @throws Exception
+     *             exception
+     */
+    @SuppressWarnings("resource")
+    @Processor
+    @OAuthProtected
+    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
+    public Item uploadLongStream(@Payload InputStream fileData,
+                                 @Optional @Default("true") Boolean overwrite,
+                                 String path,
+                                 String filename) throws Exception {
+
+        byte[] buffer = new byte[MAX_UPLOAD_BUFFER_LEN];
+        Long readBytesAccum = 0L;
+        int readBytes = 0;
+        String uploadId = null;
+
+        while(readBytes >= 0) {
+            readBytes = fileData.read(buffer);
+
+            ByteArrayInputStream chunk = new ByteArrayInputStream(ArrayUtils.subarray(buffer,0, readBytes));
+
+            if (readBytes > 0) {
+                WebResource r = this
+                        .contentResource
+                        .path("chunked_upload");
+
+                if (uploadId != null)
+                    r = r.queryParam("upload_id", uploadId)
+                         .queryParam("offset", readBytesAccum.toString());
+
+                WebResource.Builder request = r
+                        .entity(chunk)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .type(MediaType.APPLICATION_OCTET_STREAM);
+
+                Chunk uploadedChunk = this.jerseyUtilUpload.put(request, Chunk.class, 200);
+
+                // Set the uploadId after the first successful upload
+                if (uploadId == null && uploadedChunk != null)
+                    uploadId = uploadedChunk.getUploadId();
+
+                readBytesAccum += readBytes;
+
+                if (!uploadedChunk.getOffset().equals(readBytesAccum)) {
+                    throw new DropboxException("Error while uploading file. Offsets do not match");
+                }
+            }
+        }
+
+        WebResource r = this.contentResource
+                                    .path("commit_chunked_upload")
+                                    .path(ROOT_PARAM)
+                                    .path(path)
+                                    .path(filename);
+
+        Item file = this.list(StringUtils.join( new String[] {path, filename } , "/"));
+        if (file != null) {
+            r = r.queryParam("parent_rev", file.getRev());
+        }
+
+        return jerseyUtil.post(r.queryParam("overwrite", overwrite.toString())
+                .queryParam("upload_id", uploadId)
+                .accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON), Item.class, 200);
     }
 
 	// --------------------------------------
