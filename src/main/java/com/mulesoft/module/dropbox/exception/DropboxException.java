@@ -9,6 +9,19 @@
 package com.mulesoft.module.dropbox.exception;
 
 public class DropboxException extends RuntimeException {
-    public DropboxException(String json) {
+
+    private String message;
+
+    public DropboxException(String message){
+        this.message = message;
     }
+
+    public DropboxException(Error error) {
+        this.message = error.getError();
+    }
+
+    public String getMessage(){
+        return message;
+    }
+
 }

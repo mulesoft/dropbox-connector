@@ -8,12 +8,10 @@
 
 package com.mulesoft.module.dropbox.jersey;
 
-import java.io.ByteArrayInputStream;
-
 import com.mulesoft.module.dropbox.exception.DropboxException;
 import com.mulesoft.module.dropbox.exception.DropboxTokenExpiredException;
 import org.mule.commons.jersey.DefaultResponseHandler;
-
+import com.mulesoft.module.dropbox.exception.Error;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 
@@ -34,8 +32,7 @@ public class DropboxResponseHandler extends DefaultResponseHandler {
 			throw new DropboxTokenExpiredException();
 		}
 
-		String json = response.getEntity(String.class);
-        System.out.println(json);
-        throw new DropboxException(json);
+		Error error = response.getEntity(Error.class);
+        throw new DropboxException(error);
 	}
 }
