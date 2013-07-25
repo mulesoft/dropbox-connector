@@ -276,7 +276,10 @@ public class DropboxConnector {
     public InputStream downloadFile(String path,
 			@Optional @Default("false") boolean delete) throws Exception {
 
-        InputStream response = this.jerseyUtil.get(this.contentResource.path(adaptPath(path)), InputStream.class, 200);
+        InputStream response = this.jerseyUtil.get(this.contentResource
+                                                            .path("files")
+                                                            .path(ROOT_PARAM)
+                                                            .path(adaptPath(path)), InputStream.class, 200);
 
 		if (delete)
 			this.delete(path);
