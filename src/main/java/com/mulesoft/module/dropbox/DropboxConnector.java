@@ -57,7 +57,7 @@ import java.util.Date;
  * 
  * @author MuleSoft, Inc.
  */
-@Connector(name = "dropbox", schemaVersion = "3.3.0", friendlyName = "Dropbox", minMuleVersion = "3.3")
+@Connector(name = "dropbox", schemaVersion = "3.3.0", friendlyName = "Dropbox", minMuleVersion = "3.4")
 @OAuth2(authorizationUrl = "https://www.dropbox.com/1/oauth2/authorize",
 		accessTokenUrl = "https://api.dropbox.com/1/oauth2/token",
         accessTokenRegex = "\"access_token\"[ ]*:[ ]*\"([^\\\"]*)\"",
