@@ -9,8 +9,8 @@
 package com.mulesoft.module.dropbox;
 
 import java.util.Arrays;
-import java.util.List;
 
+import com.mulesoft.module.dropbox.model.Item;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,14 +39,12 @@ public class DropboxConnectorDriver
 
         DropboxConnector connector = new DropboxConnector();
         connector.setAccessToken(ACCESS_KEY);
-        connector.setAccessTokenSecret(ACCESS_SECRET);
         connector.setAppKey(APP_KEY);
         connector.setAppSecret(APP_SECRET);
         connector.setServer("api.dropbox.com");
-        connector.setDebug(true);
 
-        List<String> list = connector.list("/My folder");
-        System.out.println(Arrays.toString(list.toArray()));;
+//        Item list = connector.list("/My folder");
+//        System.out.println(Arrays.toString(list.getContents().toArray()));;
     }
 
 }
