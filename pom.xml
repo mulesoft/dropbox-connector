@@ -15,8 +15,6 @@
 	</parent>
 
 	<properties>
-		<mule.version>3.4.0</mule.version>
-		<mule.devkit.version>3.4.0</mule.devkit.version>
 		<jersey.version>1.16</jersey.version>
         <gson.version>2.2.2</gson.version>
         <category>Community</category>
