@@ -6,7 +6,7 @@
  * LICENSE.md file.
  */
 
-package com.mulesoft.module.dropbox.jersey.json;
+package org.mule.modules.dropbox.jersey.json;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;

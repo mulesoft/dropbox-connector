@@ -6,18 +6,18 @@
  * LICENSE.md file.
  */
 
-package com.mulesoft.module.dropbox;
+package org.mule.modules.dropbox;
 
-import com.mulesoft.module.dropbox.exception.DropboxException;
-import com.mulesoft.module.dropbox.exception.DropboxTokenExpiredException;
-import com.mulesoft.module.dropbox.jersey.AuthBuilderBehaviour;
-import com.mulesoft.module.dropbox.jersey.DropboxResponseHandler;
-import com.mulesoft.module.dropbox.jersey.MediaTypesBuilderBehaviour;
-import com.mulesoft.module.dropbox.jersey.json.GsonFactory;
-import com.mulesoft.module.dropbox.model.AccountInformation;
-import com.mulesoft.module.dropbox.model.Chunk;
-import com.mulesoft.module.dropbox.model.Item;
-import com.mulesoft.module.dropbox.model.Link;
+import org.mule.modules.dropbox.exception.DropboxException;
+import org.mule.modules.dropbox.exception.DropboxTokenExpiredException;
+import org.mule.modules.dropbox.jersey.AuthBuilderBehaviour;
+import org.mule.modules.dropbox.jersey.DropboxResponseHandler;
+import org.mule.modules.dropbox.jersey.MediaTypesBuilderBehaviour;
+import org.mule.modules.dropbox.jersey.json.GsonFactory;
+import org.mule.modules.dropbox.model.AccountInformation;
+import org.mule.modules.dropbox.model.Chunk;
+import org.mule.modules.dropbox.model.Item;
+import org.mule.modules.dropbox.model.Link;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;

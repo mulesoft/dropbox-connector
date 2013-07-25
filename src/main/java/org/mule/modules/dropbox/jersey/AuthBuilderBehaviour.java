@@ -6,10 +6,9 @@
  * LICENSE.md file.
  */
 
-package com.mulesoft.module.dropbox.jersey;
+package org.mule.modules.dropbox.jersey;
 
-import javax.ws.rs.core.MediaType;
-
+import org.mule.modules.dropbox.DropboxConnector;
 import org.mule.commons.jersey.RequestBehaviour;
 
 import com.sun.jersey.api.client.GenericType;
@@ -20,19 +19,21 @@ import com.sun.jersey.api.client.WebResource.Builder;
  * @author mariano.gonzalez@mulesoft.com
  *
  */
-public class MediaTypesBuilderBehaviour implements RequestBehaviour {
+public class AuthBuilderBehaviour implements RequestBehaviour {
+
+	private DropboxConnector connector;
 	
-	public static final MediaTypesBuilderBehaviour INSTANCE = new MediaTypesBuilderBehaviour();
-	
-	private MediaTypesBuilderBehaviour() {}
+	public AuthBuilderBehaviour(DropboxConnector connector) {
+		this.connector = connector;
+	}
 	
 	@Override
 	public <T> Builder behave(Builder builder, String method, Class<T> entityClass) {
-        return builder.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
+		return builder.header("Authorization", "Bearer " + this.connector.getAccessToken());
 	}
 
 	@Override
 	public <T> Builder behave(Builder builder, String method, GenericType<T> type) {
-        return builder.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
+		return builder.header("Authorization", "Bearer " + this.connector.getAccessToken());
 	}
 }

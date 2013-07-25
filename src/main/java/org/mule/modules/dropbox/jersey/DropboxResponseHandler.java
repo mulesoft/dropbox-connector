@@ -6,12 +6,12 @@
  * LICENSE.md file.
  */
 
-package com.mulesoft.module.dropbox.jersey;
+package org.mule.modules.dropbox.jersey;
 
-import com.mulesoft.module.dropbox.exception.DropboxException;
-import com.mulesoft.module.dropbox.exception.DropboxTokenExpiredException;
+import org.mule.modules.dropbox.exception.DropboxException;
+import org.mule.modules.dropbox.exception.DropboxTokenExpiredException;
 import org.mule.commons.jersey.DefaultResponseHandler;
-import com.mulesoft.module.dropbox.exception.Error;
+import org.mule.modules.dropbox.exception.Error;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 

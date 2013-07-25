@@ -10,7 +10,8 @@ package com.mulesoft.module.dropbox;
 
 import java.util.Arrays;
 
-import com.mulesoft.module.dropbox.model.Item;
+import org.mule.modules.dropbox.DropboxConnector;
+import org.mule.modules.dropbox.model.Item;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -6,12 +6,13 @@
  * LICENSE.md file.
  */
 
-package com.mulesoft.module.dropbox.jersey;
+package org.mule.modules.dropbox.jersey;
+
+import javax.ws.rs.core.MediaType;
 
 import org.mule.commons.jersey.RequestBehaviour;
 
 import com.sun.jersey.api.client.GenericType;
-import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 
 /**
@@ -19,19 +20,19 @@ import com.sun.jersey.api.client.WebResource.Builder;
  * @author mariano.gonzalez@mulesoft.com
  *
  */
-public class GzipBehaviour implements RequestBehaviour {
+public class MediaTypesBuilderBehaviour implements RequestBehaviour {
 	
-	public static final GzipBehaviour INSTANCE = new GzipBehaviour();
+	public static final MediaTypesBuilderBehaviour INSTANCE = new MediaTypesBuilderBehaviour();
 	
-	private GzipBehaviour(){}
+	private MediaTypesBuilderBehaviour() {}
 	
-	public <T> WebResource.Builder behave(WebResource.Builder builder, String method, Class<T> entityClass) {
-		return builder.header("Accept-Encoding", "gzip, deflate");
+	@Override
+	public <T> Builder behave(Builder builder, String method, Class<T> entityClass) {
+        return builder.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public <T> Builder behave(Builder builder, String method, GenericType<T> type) {
-		return builder.header("Accept-Encoding", "gzip, deflate");
-	};
-
+        return builder.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
+	}
 }

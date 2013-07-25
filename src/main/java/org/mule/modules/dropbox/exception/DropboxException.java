@@ -6,7 +6,7 @@
  * LICENSE.md file.
  */
 
-package com.mulesoft.module.dropbox.exception;
+package org.mule.modules.dropbox.exception;
 
 public class DropboxException extends RuntimeException {
 

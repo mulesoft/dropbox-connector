@@ -6,12 +6,12 @@
  * LICENSE.md file.
  */
 
-package com.mulesoft.module.dropbox.jersey;
+package org.mule.modules.dropbox.jersey;
 
-import com.mulesoft.module.dropbox.DropboxConnector;
 import org.mule.commons.jersey.RequestBehaviour;
 
 import com.sun.jersey.api.client.GenericType;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 
 /**
@@ -19,21 +19,19 @@ import com.sun.jersey.api.client.WebResource.Builder;
  * @author mariano.gonzalez@mulesoft.com
  *
  */
-public class AuthBuilderBehaviour implements RequestBehaviour {
-
-	private DropboxConnector connector;
+public class GzipBehaviour implements RequestBehaviour {
 	
-	public AuthBuilderBehaviour(DropboxConnector connector) {
-		this.connector = connector;
-	}
+	public static final GzipBehaviour INSTANCE = new GzipBehaviour();
 	
-	@Override
-	public <T> Builder behave(Builder builder, String method, Class<T> entityClass) {
-		return builder.header("Authorization", "Bearer " + this.connector.getAccessToken());
+	private GzipBehaviour(){}
+	
+	public <T> WebResource.Builder behave(WebResource.Builder builder, String method, Class<T> entityClass) {
+		return builder.header("Accept-Encoding", "gzip, deflate");
 	}
 
 	@Override
 	public <T> Builder behave(Builder builder, String method, GenericType<T> type) {
-		return builder.header("Authorization", "Bearer " + this.connector.getAccessToken());
-	}
+		return builder.header("Accept-Encoding", "gzip, deflate");
+	};
+
 }

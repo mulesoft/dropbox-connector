@@ -1,4 +1,4 @@
-package com.mulesoft.module.dropbox.model;
+package org.mule.modules.dropbox.model;
 
 import java.io.Serializable;
 import java.util.List;
