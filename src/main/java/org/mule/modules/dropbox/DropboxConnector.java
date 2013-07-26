@@ -480,10 +480,13 @@ public class DropboxConnector {
                                     .path(ROOT_PARAM)
                                     .path(path)
                                     .path(filename);
-
-        Item file = this.list(StringUtils.join( new String[] {path, filename } , "/"));
-        if (file != null) {
-            r = r.queryParam("parent_rev", file.getRev());
+        try {
+            Item file = this.list(StringUtils.join( new String[] {path, filename } , "/"));
+            if (file != null) {
+                r = r.queryParam("parent_rev", file.getRev());
+            }
+        } catch (DropboxException e) {
+            // file was not found
         }
 
         return jerseyUtil.post(r.queryParam("overwrite", overwrite.toString())
