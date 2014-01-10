@@ -8,16 +8,6 @@
 
 package org.mule.modules.dropbox;
 
-import org.mule.modules.dropbox.exception.DropboxException;
-import org.mule.modules.dropbox.exception.DropboxTokenExpiredException;
-import org.mule.modules.dropbox.jersey.AuthBuilderBehaviour;
-import org.mule.modules.dropbox.jersey.DropboxResponseHandler;
-import org.mule.modules.dropbox.jersey.MediaTypesBuilderBehaviour;
-import org.mule.modules.dropbox.jersey.json.GsonFactory;
-import org.mule.modules.dropbox.model.AccountInformation;
-import org.mule.modules.dropbox.model.Chunk;
-import org.mule.modules.dropbox.model.Item;
-import org.mule.modules.dropbox.model.Link;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
@@ -34,6 +24,7 @@ import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.mule.RequestContext;
 import org.mule.api.MuleException;
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
@@ -45,6 +36,16 @@ import org.mule.api.annotations.param.Optional;
 import org.mule.api.annotations.param.Payload;
 import org.mule.commons.jersey.JerseyUtil;
 import org.mule.commons.jersey.provider.GsonProvider;
+import org.mule.modules.dropbox.exception.DropboxException;
+import org.mule.modules.dropbox.exception.DropboxTokenExpiredException;
+import org.mule.modules.dropbox.jersey.AuthBuilderBehaviour;
+import org.mule.modules.dropbox.jersey.DropboxResponseHandler;
+import org.mule.modules.dropbox.jersey.MediaTypesBuilderBehaviour;
+import org.mule.modules.dropbox.jersey.json.GsonFactory;
+import org.mule.modules.dropbox.model.AccountInformation;
+import org.mule.modules.dropbox.model.Chunk;
+import org.mule.modules.dropbox.model.Item;
+import org.mule.modules.dropbox.model.Link;
 
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
@@ -70,7 +71,7 @@ public class DropboxConnector {
 
     private String accessTokenIdentifier;
 
-	/**
+	/**                        `
 	 * URL of the Dropbox server API
 	 */
 	@Configurable
@@ -154,6 +155,11 @@ public class DropboxConnector {
         }
 
         return this.accessTokenIdentifier;
+    }
+
+    @OAuthPostAuthorization
+    public void postAuthorize() throws Exception{
+        RequestContext.getEvent().setFlowVariable("remoteUserId", this.getAccount().getUid());
     }
 
 	/**
