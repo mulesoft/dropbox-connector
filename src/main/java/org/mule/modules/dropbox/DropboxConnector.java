@@ -159,6 +159,8 @@ public class DropboxConnector {
 
     @OAuthPostAuthorization
     public void postAuthorize() throws Exception{
+        //REMOVE THIS: this hack needs to be removed once the connector returns the remote user id
+        // by itself in a right way after authorize
         RequestContext.getEvent().setFlowVariable("remoteUserId", this.getAccount().getUid());
     }
 
