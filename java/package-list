@@ -1,8 +1,17 @@
-com.mulesoft.module.dropbox
-com.mulesoft.module.dropbox.adapters
-com.mulesoft.module.dropbox.agents
-com.mulesoft.module.dropbox.config
-com.mulesoft.module.dropbox.oauth
-com.mulesoft.module.dropbox.process
-com.mulesoft.module.dropbox.processors
+org.mule.modules.dropbox
+org.mule.modules.dropbox.adapter
+org.mule.modules.dropbox.adapters
+org.mule.modules.dropbox.agents
+org.mule.modules.dropbox.basic
+org.mule.modules.dropbox.callback
+org.mule.modules.dropbox.config
+org.mule.modules.dropbox.connection
+org.mule.modules.dropbox.devkit
+org.mule.modules.dropbox.exception
+org.mule.modules.dropbox.jersey
+org.mule.modules.dropbox.jersey.json
+org.mule.modules.dropbox.model
+org.mule.modules.dropbox.oauth
+org.mule.modules.dropbox.process
+org.mule.modules.dropbox.processors
 

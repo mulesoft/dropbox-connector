@@ -208,7 +208,7 @@
 
 <div id="jd-header">
     org.mule.modules
-<h1>Dropbox-connector</h1>
+<h1>mule-module-dropbox</h1>
 
 </div><!-- end header -->
 
@@ -225,10 +225,10 @@
           <th>Schema Location</th><td>http://www.mulesoft.org/schema/mule/dropbox/current/mule-dropbox.xsd&nbsp;&nbsp;(<a href="dropbox-schema.html">View Schema</a>)</td>
         </tr>
 <tr>
-          <th>Schema Version</th><td>3.2.2</td>
+          <th>Schema Version</th><td>3.3.0</td>
         </tr>
 <tr>
-          <th>Minimum Mule Version</th><td>3.2</td>
+          <th>Minimum Mule Version</th><td>3.4</td>
         </tr>
     </tbody></table>
   </div>
@@ -241,7 +241,7 @@
   &lt;xs:import namespace=&quot;http://www.w3.org/XML/1998/namespace&quot;&gt;&lt;/xs:import&gt;
   &lt;xs:import schemaLocation=&quot;http://www.springframework.org/schema/beans/spring-beans-3.0.xsd&quot; namespace=&quot;http://www.springframework.org/schema/beans&quot;&gt;&lt;/xs:import&gt;
   &lt;xs:import schemaLocation=&quot;http://www.mulesoft.org/schema/mule/core/current/mule.xsd&quot; namespace=&quot;http://www.mulesoft.org/schema/mule/core&quot;&gt;&lt;/xs:import&gt;
-  &lt;xs:element xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;config&quot; substitutionGroup=&quot;mule:abstract-extension&quot; ns2:javaClass=&quot;com.mulesoft.module.dropbox.adapters.DropboxConnectorOAuth1Adapter&quot;&gt;
+  &lt;xs:element xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;config&quot; substitutionGroup=&quot;mule:abstract-extension&quot; ns2:javaClass=&quot;org.mule.modules.dropbox.adapters.DropboxConnectorOAuth2Adapter&quot;&gt;
     &lt;xs:complexType&gt;
       &lt;xs:complexContent&gt;
         &lt;xs:extension base=&quot;mule:abstractExtensionType&quot;&gt;
@@ -267,20 +267,16 @@ The Dropbox Connector will allow to use the Dropbox REST API. Almost every opera
                 &lt;/xs:complexContent&gt;
               &lt;/xs:complexType&gt;
             &lt;/xs:element&gt;
-            &lt;xs:element name=&quot;oauth-save-access-token&quot; maxOccurs=&quot;1&quot; minOccurs=&quot;0&quot;&gt;
+            &lt;xs:element name=&quot;oauth-store-config&quot; maxOccurs=&quot;1&quot; minOccurs=&quot;0&quot;&gt;
               &lt;xs:annotation&gt;
-                &lt;xs:documentation&gt;A chain of message processors processed synchronously that can be used to save OAuth state. They will be executed once the connector acquires an OAuth access token.&lt;/xs:documentation&gt;
+                &lt;xs:documentation&gt;Configuration element for storage of access tokens&lt;/xs:documentation&gt;
               &lt;/xs:annotation&gt;
               &lt;xs:complexType&gt;
-                &lt;xs:group ref=&quot;mule:messageProcessorOrOutboundEndpoint&quot; maxOccurs=&quot;unbounded&quot; minOccurs=&quot;0&quot;&gt;&lt;/xs:group&gt;
-              &lt;/xs:complexType&gt;
-            &lt;/xs:element&gt;
-            &lt;xs:element name=&quot;oauth-restore-access-token&quot; maxOccurs=&quot;1&quot; minOccurs=&quot;0&quot;&gt;
-              &lt;xs:annotation&gt;
-                &lt;xs:documentation&gt;A chain of message processors processed synchronously that can be used to restore OAuth state. They will be executed whenever access to a protected resource is requested and the connector is not authorized yet.&lt;/xs:documentation&gt;
-              &lt;/xs:annotation&gt;
-              &lt;xs:complexType&gt;
-                &lt;xs:group ref=&quot;mule:messageProcessorOrOutboundEndpoint&quot; maxOccurs=&quot;unbounded&quot; minOccurs=&quot;0&quot;&gt;&lt;/xs:group&gt;
+                &lt;xs:complexContent&gt;
+                  &lt;xs:extension base=&quot;mule:abstractExtensionType&quot;&gt;
+                    &lt;xs:attribute name=&quot;objectStore-ref&quot; use=&quot;required&quot; type=&quot;xs:string&quot;&gt;&lt;/xs:attribute&gt;
+                  &lt;/xs:extension&gt;
+                &lt;/xs:complexContent&gt;
               &lt;/xs:complexType&gt;
             &lt;/xs:element&gt;
           &lt;/xs:sequence&gt;
@@ -289,19 +285,14 @@ The Dropbox Connector will allow to use the Dropbox REST API. Almost every opera
               &lt;xs:documentation&gt;Give a name to this configuration so it can be later referenced by config-ref.&lt;/xs:documentation&gt;
             &lt;/xs:annotation&gt;
           &lt;/xs:attribute&gt;
-          &lt;xs:attribute name=&quot;server&quot; default=&quot;api.dropbox.com&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:attribute name=&quot;server&quot; default=&quot;https://api.dropbox.com/1/&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
             &lt;xs:annotation&gt;
               &lt;xs:documentation&gt;URL of the Dropbox server API&lt;/xs:documentation&gt;
             &lt;/xs:annotation&gt;
           &lt;/xs:attribute&gt;
-          &lt;xs:attribute name=&quot;contentServer&quot; default=&quot;api-content.dropbox.com&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:attribute name=&quot;contentServer&quot; default=&quot;https://api-content.dropbox.com/1/&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
             &lt;xs:annotation&gt;
               &lt;xs:documentation&gt;URL of the Dropbox server content API&lt;/xs:documentation&gt;
-            &lt;/xs:annotation&gt;
-          &lt;/xs:attribute&gt;
-          &lt;xs:attribute xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; name=&quot;port&quot; default=&quot;80&quot; use=&quot;optional&quot; type=&quot;integerType&quot;&gt;
-            &lt;xs:annotation&gt;
-              &lt;xs:documentation&gt;Dropbox server port&lt;/xs:documentation&gt;
             &lt;/xs:annotation&gt;
           &lt;/xs:attribute&gt;
           &lt;xs:attribute name=&quot;appKey&quot; use=&quot;required&quot; type=&quot;xs:string&quot;&gt;
@@ -314,24 +305,14 @@ The Dropbox Connector will allow to use the Dropbox REST API. Almost every opera
               &lt;xs:documentation&gt;Application secret&lt;/xs:documentation&gt;
             &lt;/xs:annotation&gt;
           &lt;/xs:attribute&gt;
-          &lt;xs:attribute xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; name=&quot;debug&quot; default=&quot;false&quot; use=&quot;optional&quot; type=&quot;booleanType&quot;&gt;
-            &lt;xs:annotation&gt;
-              &lt;xs:documentation&gt;debug mode&lt;/xs:documentation&gt;
-            &lt;/xs:annotation&gt;
-          &lt;/xs:attribute&gt;
-          &lt;xs:attribute name=&quot;accessTokenUrl&quot; default=&quot;https://api.dropbox.com/1/oauth/access_token&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:attribute name=&quot;accessTokenUrl&quot; default=&quot;https://api.dropbox.com/1/oauth2/token&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
             &lt;xs:annotation&gt;
               &lt;xs:documentation&gt;The URL defined by the Service Provider to obtain an access token&lt;/xs:documentation&gt;
             &lt;/xs:annotation&gt;
           &lt;/xs:attribute&gt;
-          &lt;xs:attribute name=&quot;authorizationUrl&quot; default=&quot;https://www.dropbox.com/1/oauth/authorize&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:attribute name=&quot;authorizationUrl&quot; default=&quot;https://www.dropbox.com/1/oauth2/authorize&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
             &lt;xs:annotation&gt;
               &lt;xs:documentation&gt;The URL defined by the Service Provider where the resource owner will be redirected to grant authorization to the connector&lt;/xs:documentation&gt;
-            &lt;/xs:annotation&gt;
-          &lt;/xs:attribute&gt;
-          &lt;xs:attribute name=&quot;requestTokenUrl&quot; default=&quot;https://api.dropbox.com/1/oauth/request_token&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
-            &lt;xs:annotation&gt;
-              &lt;xs:documentation&gt;The URL defined by the Service Provider used to obtain an un-authorized request token&lt;/xs:documentation&gt;
             &lt;/xs:annotation&gt;
           &lt;/xs:attribute&gt;
         &lt;/xs:extension&gt;
@@ -356,6 +337,11 @@ The Dropbox Connector will allow to use the Dropbox REST API. Almost every opera
             &lt;xs:documentation&gt;Specify which configuration to use for this invocation.&lt;/xs:documentation&gt;
           &lt;/xs:annotation&gt;
         &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;state&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;Any value that you wish to be sent with the callback&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
         &lt;xs:attribute name=&quot;accessTokenUrl&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
           &lt;xs:annotation&gt;
             &lt;xs:documentation&gt;The URL defined by the Service Provider to obtain an access token&lt;/xs:documentation&gt;
@@ -366,17 +352,17 @@ The Dropbox Connector will allow to use the Dropbox REST API. Almost every opera
             &lt;xs:documentation&gt;The URL defined by the Service Provider where the resource owner will be redirected to grant authorization to the connector&lt;/xs:documentation&gt;
           &lt;/xs:annotation&gt;
         &lt;/xs:attribute&gt;
-        &lt;xs:attribute name=&quot;requestTokenUrl&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
-          &lt;xs:annotation&gt;
-            &lt;xs:documentation&gt;The URL defined by the Service Provider used to obtain an un-authorized request token&lt;/xs:documentation&gt;
-          &lt;/xs:annotation&gt;
-        &lt;/xs:attribute&gt;
       &lt;/xs:extension&gt;
     &lt;/xs:complexContent&gt;
   &lt;/xs:complexType&gt;
   &lt;xs:complexType name=&quot;UnauthorizeType&quot;&gt;
     &lt;xs:complexContent&gt;
       &lt;xs:extension xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; base=&quot;mule:abstractMessageProcessorType&quot;&gt;
+        &lt;xs:attribute name=&quot;accessTokenId&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;The id of the access token that will be used to authenticate the call&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
         &lt;xs:attribute name=&quot;config-ref&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
           &lt;xs:annotation&gt;
             &lt;xs:documentation&gt;Specify which configuration to use for this invocation.&lt;/xs:documentation&gt;
@@ -385,13 +371,14 @@ The Dropbox Connector will allow to use the Dropbox REST API. Almost every opera
       &lt;/xs:extension&gt;
     &lt;/xs:complexContent&gt;
   &lt;/xs:complexType&gt;
-  &lt;xs:element xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;upload-file&quot; substitutionGroup=&quot;mule:abstract-message-processor&quot; type=&quot;UploadFileType&quot;&gt;
+  &lt;xs:element xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;upload-stream&quot; substitutionGroup=&quot;mule:abstract-message-processor&quot; type=&quot;UploadStreamType&quot;&gt;
     &lt;xs:annotation&gt;
       &lt;xs:documentation&gt;Upload file to Dropbox. The payload is an InputStream containing bytes of
-the data to be uploaded.&lt;/xs:documentation&gt;
+the data to be uploaded.
+You can upload files of up to 150MB with this method. Use upload-long-stream for larger files&lt;/xs:documentation&gt;
     &lt;/xs:annotation&gt;
   &lt;/xs:element&gt;
-  &lt;xs:complexType name=&quot;UploadFileType&quot;&gt;
+  &lt;xs:complexType name=&quot;UploadStreamType&quot;&gt;
     &lt;xs:complexContent&gt;
       &lt;xs:extension xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; base=&quot;mule:abstractMessageProcessorType&quot;&gt;
         &lt;xs:attribute name=&quot;config-ref&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
@@ -562,6 +549,37 @@ the data to be uploaded.&lt;/xs:documentation&gt;
       &lt;/xs:extension&gt;
     &lt;/xs:complexContent&gt;
   &lt;/xs:complexType&gt;
+  &lt;xs:element xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;copy&quot; substitutionGroup=&quot;mule:abstract-message-processor&quot; type=&quot;CopyType&quot;&gt;
+    &lt;xs:annotation&gt;
+      &lt;xs:documentation&gt;Copies a file or folder to a new location.&lt;/xs:documentation&gt;
+    &lt;/xs:annotation&gt;
+  &lt;/xs:element&gt;
+  &lt;xs:complexType name=&quot;CopyType&quot;&gt;
+    &lt;xs:complexContent&gt;
+      &lt;xs:extension xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; base=&quot;mule:abstractMessageProcessorType&quot;&gt;
+        &lt;xs:attribute name=&quot;config-ref&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;Specify which configuration to use for this invocation.&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;from&quot; use=&quot;required&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;Specifies the file or folder to be copied from, relative to root.&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;to&quot; use=&quot;required&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;Specifies the destination path, including the new name for the file or folder, relative to root.&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;accessTokenId&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;The id of the access token that will be used to authenticate the call&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+      &lt;/xs:extension&gt;
+    &lt;/xs:complexContent&gt;
+  &lt;/xs:complexType&gt;
   &lt;xs:element xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;get-link&quot; substitutionGroup=&quot;mule:abstract-message-processor&quot; type=&quot;GetLinkType&quot;&gt;
     &lt;xs:annotation&gt;
       &lt;xs:documentation&gt;Creates and returns a Dropbox link to files or folders users can use to view a preview of the file in a web browser.&lt;/xs:documentation&gt;
@@ -583,6 +601,65 @@ the data to be uploaded.&lt;/xs:documentation&gt;
         &lt;xs:attribute xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; name=&quot;shortUrl&quot; default=&quot;true&quot; use=&quot;optional&quot; type=&quot;booleanType&quot;&gt;
           &lt;xs:annotation&gt;
             &lt;xs:documentation&gt;Boolean indicating if the url returned will be shortened using the Dropbox url shortener (when true) or will link directly to the file's preview page (when false).&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;accessTokenId&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;The id of the access token that will be used to authenticate the call&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+      &lt;/xs:extension&gt;
+    &lt;/xs:complexContent&gt;
+  &lt;/xs:complexType&gt;
+  &lt;xs:element xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;get-account&quot; substitutionGroup=&quot;mule:abstract-message-processor&quot; type=&quot;GetAccountType&quot;&gt;
+    &lt;xs:annotation&gt;
+      &lt;xs:documentation&gt;Requests the account's information.&lt;/xs:documentation&gt;
+    &lt;/xs:annotation&gt;
+  &lt;/xs:element&gt;
+  &lt;xs:complexType name=&quot;GetAccountType&quot;&gt;
+    &lt;xs:complexContent&gt;
+      &lt;xs:extension xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; base=&quot;mule:abstractMessageProcessorType&quot;&gt;
+        &lt;xs:attribute name=&quot;config-ref&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;Specify which configuration to use for this invocation.&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;accessTokenId&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;The id of the access token that will be used to authenticate the call&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+      &lt;/xs:extension&gt;
+    &lt;/xs:complexContent&gt;
+  &lt;/xs:complexType&gt;
+  &lt;xs:element xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;upload-long-stream&quot; substitutionGroup=&quot;mule:abstract-message-processor&quot; type=&quot;UploadLongStreamType&quot;&gt;
+    &lt;xs:annotation&gt;
+      &lt;xs:documentation&gt;Upload file to Dropbox. The payload is an InputStream containing bytes of
+the data to be uploaded.
+This version of the method supports streams of arbitrary length&lt;/xs:documentation&gt;
+    &lt;/xs:annotation&gt;
+  &lt;/xs:element&gt;
+  &lt;xs:complexType name=&quot;UploadLongStreamType&quot;&gt;
+    &lt;xs:complexContent&gt;
+      &lt;xs:extension xmlns:mule=&quot;http://www.mulesoft.org/schema/mule/core&quot; base=&quot;mule:abstractMessageProcessorType&quot;&gt;
+        &lt;xs:attribute name=&quot;config-ref&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;Specify which configuration to use for this invocation.&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute xmlns=&quot;http://www.mulesoft.org/schema/mule/dropbox&quot; name=&quot;overwrite&quot; default=&quot;true&quot; use=&quot;optional&quot; type=&quot;booleanType&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;overwrite file in case it already exists&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;path&quot; use=&quot;required&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;The destination path&lt;/xs:documentation&gt;
+          &lt;/xs:annotation&gt;
+        &lt;/xs:attribute&gt;
+        &lt;xs:attribute name=&quot;filename&quot; use=&quot;required&quot; type=&quot;xs:string&quot;&gt;
+          &lt;xs:annotation&gt;
+            &lt;xs:documentation&gt;The destination file name&lt;/xs:documentation&gt;
           &lt;/xs:annotation&gt;
         &lt;/xs:attribute&gt;
         &lt;xs:attribute name=&quot;accessTokenId&quot; use=&quot;optional&quot; type=&quot;xs:string&quot;&gt;
