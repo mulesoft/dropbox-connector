@@ -1,0 +1,36 @@
+<!-- BEGIN_INCLUDE(dropbox:authorize) -->
+    <dropbox:authorize/>
+<!-- END_INCLUDE(dropbox:authorize) -->
+<!-- BEGIN_INCLUDE(dropbox:upload-stream) -->
+    <dropbox:upload-stream path="foo/bar" filename="test.txt"/>
+<!-- END_INCLUDE(dropbox:upload-stream) -->
+<!-- BEGIN_INCLUDE(dropbox:upload-long-stream) -->
+    <dropbox:upload-long-stream path="foo/bar" filename="test.txt"/>
+<!-- END_INCLUDE(dropbox:upload-long-stream) -->
+<!-- BEGIN_INCLUDE(dropbox:create-folder) -->
+    <dropbox:create-folder path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:create-folder) -->
+<!-- BEGIN_INCLUDE(dropbox:delete) -->
+    <dropbox:delete path="foo/bar/test.txt"/>
+<!-- END_INCLUDE(dropbox:delete) -->
+<!-- BEGIN_INCLUDE(dropbox:download-file) -->
+    <dropbox:download-file path="foo/bar/test.txt"/>
+<!-- END_INCLUDE(dropbox:download-file) -->
+<!-- BEGIN_INCLUDE(dropbox:list) -->
+    <dropbox:list path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:list) -->
+<!-- BEGIN_INCLUDE(dropbox:list-path) -->
+    <dropbox:list-path path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:list-path) -->
+<!-- BEGIN_INCLUDE(dropbox:move) -->
+    <dropbox:move from="foo/bar/test.txt" to="/home/user"/>
+<!-- END_INCLUDE(dropbox:move) -->
+<!-- BEGIN_INCLUDE(dropbox:copy) -->
+    <dropbox:copy from="foo/bar/test.txt" to="/home/user"/>
+<!-- END_INCLUDE(dropbox:copy) -->
+<!-- BEGIN_INCLUDE(dropbox:get-link) -->
+    <dropbox:get-link path="/home/user"/>
+<!-- END_INCLUDE(dropbox:get-link) -->
+<!-- BEGIN_INCLUDE(dropbox:get-account) -->
+     <dropbox:get-account/>
+<!-- END_INCLUDE(dropbox:get-account) -->
