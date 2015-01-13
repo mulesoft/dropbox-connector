@@ -8,6 +8,8 @@
 
 package org.mule.modules.dropbox.exception;
 
+import com.sun.jersey.api.client.ClientResponse;
+
 public class DropboxException extends RuntimeException {
 
     private String message;
@@ -18,6 +20,10 @@ public class DropboxException extends RuntimeException {
 
     public DropboxException(Error error) {
         this.message = error.getError();
+    }
+    
+    public DropboxException(ClientResponse response) {
+        this.message = response.toString();
     }
 
     public String getMessage(){
