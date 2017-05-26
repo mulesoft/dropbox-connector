@@ -8,19 +8,16 @@
 
 package org.mule.modules.dropbox;
 
+import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.core.impl.provider.entity.FormMultivaluedMapProvider;
 import com.sun.jersey.core.impl.provider.entity.FormProvider;
 import com.sun.jersey.core.impl.provider.entity.InputStreamProvider;
 import com.sun.jersey.core.impl.provider.entity.MimeMultipartProvider;
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataMultiPart;
-import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,12 +42,16 @@ import org.mule.modules.dropbox.jersey.json.GsonFactory;
 import org.mule.modules.dropbox.model.AccountInformation;
 import org.mule.modules.dropbox.model.Chunk;
 import org.mule.modules.dropbox.model.Item;
-import org.mule.modules.dropbox.model.Link;
+import org.mule.modules.dropbox.model.version2.FolderEntry;
+import org.mule.modules.dropbox.model.version2.FullAccount;
+import org.mule.modules.dropbox.model.version2.ListFolderResult;
 
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Dropbox Cloud Connector.
@@ -59,8 +60,8 @@ import java.util.Date;
  * @author MuleSoft, Inc.
  */
 @Connector(name = "dropbox", schemaVersion = "3.3.0", friendlyName = "Dropbox", minMuleVersion = "3.4")
-@OAuth2(authorizationUrl = "https://www.dropbox.com/1/oauth2/authorize",
-		accessTokenUrl = "https://api.dropbox.com/1/oauth2/token",
+@OAuth2(authorizationUrl = "https://www.dropbox.com/oauth2/authorize",
+		accessTokenUrl = "https://api.dropbox.com/oauth2/token",
         accessTokenRegex = "\"access_token\"[ ]*:[ ]*\"([^\\\"]*)\"",
         expirationRegex = "\"expires_in\"[ ]*:[ ]*([\\d]*)",
         refreshTokenRegex = "\"refresh_token\"[ ]*:[ ]*\"([^\\\"]*)\"")
@@ -68,6 +69,8 @@ public class DropboxConnector {
     private static final String ROOT_PARAM = "dropbox";
 
     private static final int MAX_UPLOAD_BUFFER_LEN = 4194304;
+    public static final String DEFAULT_SERVER = "https://api.dropboxapi.com/2/";
+    public static final String DEFAULT_CONTENT_SERVER = "https://content.dropboxapi.com/2/";
 
     private String accessTokenIdentifier;
 
@@ -76,7 +79,7 @@ public class DropboxConnector {
 	 */
 	@Configurable
 	@Optional
-	@Default("https://api.dropbox.com/1/")
+	@Default(DEFAULT_SERVER)
 	private String server;
 
 	/**
@@ -84,7 +87,7 @@ public class DropboxConnector {
 	 */
 	@Configurable
 	@Optional
-	@Default("https://api-content.dropbox.com/1/")
+	@Default(DEFAULT_CONTENT_SERVER)
 	private String contentServer;
 
 	/**
@@ -165,92 +168,13 @@ public class DropboxConnector {
     }
 
 	/**
-	 * Upload file to Dropbox. The payload is an InputStream containing bytes of
-	 * the data to be uploaded.
-     *
-     * You can upload files of up to 150MB with this method. Use upload-long-stream for larger files
-	 * 
-	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:upload-stream}
-	 * 
-	 * @param fileData
-	 *            file to be uploaded
-	 * @param overwrite
-	 * 				overwrite file in case it already exists           
-	 * @param path
-	 *            The destination path
-	 * @param filename
-	 *            The destination file name
-	 * 
-	 * @return Item with the metadata of the uploaded object
-	 * @throws Exception
-	 *             exception
-	 */
-	@SuppressWarnings("resource")
-    @Processor
-	@OAuthProtected
-    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
-	public Item uploadStream(@Payload InputStream fileData,
-							@Optional @Default("true") Boolean overwrite,
-							String path,
-							String filename) throws Exception {
-
-        final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(fileData, MediaType.APPLICATION_OCTET_STREAM_TYPE);
-        MultiPart parts = new FormDataMultiPart().bodyPart(formDataBodyPart);
-
-        formDataBodyPart.setContentDisposition(FormDataContentDisposition
-                .name("file")
-                .fileName(filename)
-                .size(fileData.available())
-                .modificationDate(new Date()).build());
-
-        WebResource.Builder r = this
-                            .contentResource
-                            .path("files")
-                            .path(ROOT_PARAM)
-                            .path(adaptPath(path))
-                            .queryParam("overwrite", overwrite.toString())
-                            .entity(parts)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .type(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-        return this.jerseyUtilUpload.post(r, Item.class, 200);
-	}
-
-	/**
-	 * Create new folder on Dropbox
-	 * 
-	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:create-folder}
-	 * 
-	 * @param path
-	 *            full path of the folder to be created
-	 * 
-	 * @return Item with the metadata of the created folder
-	 * @throws Exception
-	 *             exception
-	 */
-	@Processor
-	@OAuthProtected
-    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
-	public Item createFolder(String path) throws Exception {
-
-        Item folder = this.jerseyUtil.post(
-                        this.apiResource.path("fileops").path("create_folder").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200, 403);
-
-        // A 403 response means that the folder already exists
-        if (folder.getPath() == null)
-            return this.list(path);
-
-        return folder;
-	}
-
-	/**
 	 * Deletes a file or folder.
-	 * 
+	 *
 	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:delete}
-	 * 
+	 *
 	 * @param path
 	 *            full path to the file to be deleted
-	 * 
+	 *
 	 * @return Item with the metadata of the deleted object
 	 * @throws Exception
 	 *             exception
@@ -259,8 +183,33 @@ public class DropboxConnector {
 	@OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
 	public Item delete(String path) throws Exception {
-        return this.jerseyUtil.post(
-                this.apiResource.path("fileops").path("delete").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200);
+//        return this.jerseyUtil.post(
+//                this.apiResource.path("fileops").path("delete").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200);
+		return getItemFromFolderEntry(deleteV2(path));
+	}
+
+    @Processor
+    @OAuthProtected
+    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
+	public FolderEntry deleteV2(String path) {
+		String jsonEntity = "{"+pathAsJson(path)+"}";
+		return this.jerseyUtil.post(
+				this.apiResource
+						.path("files").path("delete")
+						.type(MediaType.APPLICATION_JSON_TYPE)
+						.entity(jsonAsMap(jsonEntity)),
+				FolderEntry.class,
+				200
+		);
+	}
+
+	private Map<String, Object> jsonAsMap(String json) {
+	    return new Gson().fromJson(json, Map.class);
+    }
+
+	private String pathAsJson(String path) {
+//        return "\"path\": \"/dropbox/" + adaptPath(path) + "\"";
+        return "\"path\": \"/" + adaptPath(path) + "\"";
 	}
 
 	/**
@@ -284,16 +233,31 @@ public class DropboxConnector {
     public InputStream downloadFile(String path,
 			@Optional @Default("false") boolean delete) throws Exception {
 
-        InputStream response = this.jerseyUtil.get(this.contentResource
-                                                            .path("files")
-                                                            .path(ROOT_PARAM)
-                                                            .path(adaptPath(path)), InputStream.class, 200);
-
+//        InputStream response = this.jerseyUtil.get(this.contentResource
+//                                                            .path("files")
+//                                                            .path(ROOT_PARAM)
+//                                                            .path(adaptPath(path)), InputStream.class, 200);
+		InputStream response = downloadFileV2(path);
 		if (delete)
 			this.delete(path);
 
 		return response;
 	}
+
+    @Processor
+    @OAuthProtected
+    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
+    public InputStream downloadFileV2(String path) {
+		String jsonEntity = "{"+pathAsJson(path)+"}";
+		return this.jerseyUtil.post(
+				this.apiResource
+						.path("files").path("download")
+						.header("Dropbox-API-Arg", jsonEntity),
+				InputStream.class,
+				200
+		);
+	}
+
 
 	/**
 	 * Lists the content of the remote directory
@@ -311,91 +275,74 @@ public class DropboxConnector {
 	@OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
 	public Item list(String path) throws Exception {
-		final String apiPath = adaptPath(path);
-
-        return this.jerseyUtil.get(
-                this.apiResource.path("metadata").path("dropbox").path(apiPath), Item.class, 200);
+//		final String apiPath = adaptPath(path);
+//        return this.jerseyUtil.get(
+//                this.apiResource.path("metadata").path("dropbox").path(apiPath), Item.class, 200);
+		return getItemFromListFolderResult(listV2(path));
 	}
 
-	/**
-	 * Moves a file or folder to a new location.
-	 * 
-	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:move}
-	 * 
-	 * @param from
-	 *            Specifies the file or folder to be moved from, relative to
-	 *            root.
-	 * @param to
-	 *            Specifies the destination path, including the new name for the
-	 *            file or folder, relative to root.
-	 *            
-	 * @return Item with the metadata of the moved object
-	 * @throws Exception
-	 *             exception
-	 */
-	@Processor
-	@OAuthProtected
-    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
-	public Item move(String from, String to) throws Exception {
-        return this.jerseyUtil.post(
-                this.apiResource.path("fileops")
-                                .path("move")
-                                .queryParam("root", ROOT_PARAM)
-                                .queryParam("from_path", adaptPath(from))
-                                .queryParam("to_path", adaptPath(to)), Item.class, 200);
+	private Item getItemFromListFolderResult(ListFolderResult listFolderResult) {
+		List<Item> items = new LinkedList<Item>();
+		for(FolderEntry folderEntry : listFolderResult.getEntries()) {
+			items.add(getItemFromFolderEntry(folderEntry));
+		}
+		Item item = new Item();
+		item.setContents(items);
+		return item;
 	}
-	
-	/**
-     * Copies a file or folder to a new location.
-     * 
-     * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:copy}
-     * 
-     * @param from
-     *            Specifies the file or folder to be copied from, relative to
-     *            root.
-     * @param to
-     *            Specifies the destination path, including the new name for the
-     *            file or folder, relative to root.
-     *            
-     * @return Item with the metadata of the copied object
-     * @throws Exception
-     *             exception
-     */
+
+	private Item getItemFromFolderEntry(FolderEntry folderEntry) {
+/*
+            "size": "225.4KB",
+            "rev": "35e97029684fe",
+            "hash": "35e97029684fe",
+            "thumb_exists": false,
+            "bytes": 230783,
+            "modified": "Tue, 19 Jul 2011 21:55:38 +0000",
+            "client_mtime": "Mon, 18 Jul 2011 18:04:35 +0000",
+            "path": "/Getting_Started.pdf",
+            "is_dir": false,
+            "is_deleted": false,
+            "icon": "page_white_acrobat",
+            "root": "dropbox",
+            "mime_type": "application/pdf",
+            "revision": 220823
+ */
+		Item item = new Item();
+		item.setSize(String.valueOf(folderEntry.getSize()));
+		item.setRev(folderEntry.getRev());
+		item.setHash(folderEntry.getContentHash());
+		item.setBytes(folderEntry.getSize());
+		item.setModified(folderEntry.getServerModified());
+		item.setClientMtime(folderEntry.getClientModified());
+		item.setPath(folderEntry.getPathLower());
+		item.setDir(folderEntry.getType()== FolderEntry.Type.folder);
+		item.setDeleted(folderEntry.getType()== FolderEntry.Type.deleted);
+		return item;
+	}
+
     @Processor
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
-    public Item copy(String from, String to) throws Exception {
+    public ListFolderResult listV2(String path) throws Exception {
+		String jsonEntity =
+				"{\n" +
+				"    " +pathAsJson(path)+ ",\n" +
+				"    \"recursive\": true,\n" +
+				"    \"include_media_info\": false,\n" +
+				"    \"include_deleted\": false,\n" +
+				"    \"include_has_explicit_shared_members\": false\n" +
+				"}";
         return this.jerseyUtil.post(
-                this.apiResource.path("fileops")
-                                .path("copy")
-                                .queryParam("root", ROOT_PARAM)
-                                .queryParam("from_path", adaptPath(from))
-                                .queryParam("to_path", adaptPath(to)), Item.class, 200);
-    }
-
-	/**
-	 * Creates and returns a Dropbox link to files or folders users can use to view a preview of the file in a web browser.
-	 * 
-	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:get-link}
-	 * 
-	 * @param path The path to the file or folder you want to link to.
-	 * @param shortUrl Boolean indicating if the url returned will be shortened using the Dropbox url shortener (when true) or will link directly to the file's preview page (when false).
-	 * @return Link. A Dropbox link to the given path.
-	 * 
-	 * @throws Exception exception
-	 */
-	@Processor
-	@OAuthProtected
-    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
-	public Link getLink(String path, @Optional @Default("true") Boolean shortUrl) throws Exception {
-		path = adaptPath(path);
-
-        return this.jerseyUtil.get(
-                this.apiResource.path("shares")
-                                .path("dropbox")
-                                .path(path)
-                                .queryParam("short_url", shortUrl.toString()), Link.class, 200);
+				this.apiResource
+						.path("files").path("list_folder")
+						.type(MediaType.APPLICATION_JSON_TYPE)
+						.entity(jsonAsMap(jsonEntity)),
+				ListFolderResult.class,
+				200
+		);
 	}
+
 
     /**
      * Requests the account's information.
@@ -410,9 +357,28 @@ public class DropboxConnector {
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
     public AccountInformation getAccount() throws Exception {
-        return this.jerseyUtil.get(
-                this.apiResource.path("account").path("info"), AccountInformation.class, 200);
+//        return this.jerseyUtil.get(
+//                this.apiResource.path("account").path("info"), AccountInformation.class, 200);
+		return getAccountInformationFromFullAccount(getAccountV2());
     }
+
+    private AccountInformation getAccountInformationFromFullAccount(FullAccount fullAccount) {
+    	AccountInformation accountInformation = new AccountInformation();
+    	accountInformation.setUid(fullAccount.getAccountId());
+    	accountInformation.setCountry(fullAccount.getCountry());
+    	accountInformation.setDisplayName(fullAccount.getName().getDisplayName());
+    	accountInformation.setEmail(fullAccount.getEmail());
+    	accountInformation.setReferalLink(fullAccount.getReferralLink());
+    	return accountInformation;
+	}
+
+    @Processor
+    @OAuthProtected
+    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
+    public FullAccount getAccountV2() {
+		return this.jerseyUtil.post(
+				this.apiResource.path("users").path("get_current_account"), FullAccount.class, 200);
+	}
 
 
     /**
@@ -444,7 +410,18 @@ public class DropboxConnector {
                                  @Optional @Default("true") Boolean overwrite,
                                  String path,
                                  String filename) throws Exception {
+        return getItemFromFolderEntry(uploadLongStreamV2(fileData, overwrite, path, filename));
+    }
 
+    @SuppressWarnings("resource")
+    @Processor
+    @OAuthProtected
+    @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
+    public FolderEntry uploadLongStreamV2(@Payload InputStream fileData,
+                                 @Optional @Default("true") Boolean overwrite,
+                                 String path,
+                                 String filename) throws Exception {
+		path = StringUtils.join( new String[] {path, filename } , "/");
         byte[] buffer = new byte[MAX_UPLOAD_BUFFER_LEN];
         Long readBytesAccum = 0L;
         int readBytes = 0;
@@ -456,24 +433,38 @@ public class DropboxConnector {
             ByteArrayInputStream chunk = new ByteArrayInputStream(ArrayUtils.subarray(buffer,0, readBytes));
 
             if (readBytes > 0) {
-                WebResource r = this
-                        .contentResource
-                        .path("chunked_upload");
-
-                if (uploadId != null)
-                    r = r.queryParam("upload_id", uploadId)
-                         .queryParam("offset", readBytesAccum.toString());
-
-                WebResource.Builder request = r
-                        .entity(chunk)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .type(MediaType.APPLICATION_OCTET_STREAM);
+				WebResource.Builder request;
+            	if (uploadId==null) {
+					request = this
+							.contentResource
+							.path("upload_session/start")
+							.header("Dropbox-API-Arg", "{\"close\": false}")
+							.type(MediaType.APPLICATION_OCTET_STREAM);
+				} else {
+					String jsonEntity =
+							"{\n" +
+							"    \"cursor\": {\n" +
+							"        \"session_id\": \"" + uploadId + "\",\n" +
+							"        \"offset\": " + readBytesAccum.toString() + "\n" +
+							"    },\n" +
+							"    \"close\": false\n" +
+							"}";
+					request = this
+							.contentResource
+							.path("upload_session/append_v2")
+							.header("Dropbox-API-Arg", jsonEntity);
+				}
+				request
+						.entity(chunk)
+						.accept(MediaType.APPLICATION_JSON)
+						.type(MediaType.APPLICATION_OCTET_STREAM);
 
                 Chunk uploadedChunk = this.jerseyUtilUpload.put(request, Chunk.class, 200);
 
                 // Set the uploadId after the first successful upload
-                if (uploadId == null && uploadedChunk != null)
-                    uploadId = uploadedChunk.getUploadId();
+                if (uploadId == null && uploadedChunk != null) {
+					uploadId = uploadedChunk.getUploadId();
+				}
 
                 readBytesAccum += readBytes;
 
@@ -483,24 +474,59 @@ public class DropboxConnector {
             }
         }
 
-        WebResource r = this.contentResource
-                                    .path("commit_chunked_upload")
-                                    .path(ROOT_PARAM)
-                                    .path(path)
-                                    .path(filename);
-        try {
-            Item file = this.list(StringUtils.join( new String[] {path, filename } , "/"));
-            if (file != null) {
-                r = r.queryParam("parent_rev", file.getRev());
-            }
-        } catch (DropboxException e) {
-            // file was not found
-        }
+        String previousRev = null;
+		try {
+			Item file = this.list(path);
+			if (file != null) {
+				previousRev = file.getRev();
+			}
+		} catch (DropboxException e) {
+			// file was not found
+		}
 
-        return jerseyUtil.post(r.queryParam("overwrite", overwrite.toString())
-                .queryParam("upload_id", uploadId)
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON), Item.class, 200);
+		String jsonEntity = null;
+		if (previousRev==null || !overwrite) {
+			// Add
+			jsonEntity =
+					"{\n" +
+					"    \"cursor\": {\n" +
+					"        \"session_id\": \"" + uploadId + "\",\n" +
+					"        \"offset\": 0\n" +
+					"    },\n" +
+					"    \"commit\": {\n" +
+					"        " + pathAsJson(path) + ",\n" +
+					"        \"mode\": \"add\",\n" +
+					"        \"autorename\": true,\n" +
+					"        \"mute\": false\n" +
+					"    }\n" +
+					"}";
+		} else {
+			// Update
+			jsonEntity =
+					"{\n" +
+					"    \"cursor\": {\n" +
+					"        \"session_id\": \"" + uploadId + "\",\n" +
+					"        \"offset\": 0\n" +
+					"    },\n" +
+					"    \"commit\": {\n" +
+					"        " + pathAsJson(path) + ",\n" +
+					"        \"mode\": {\n" +
+					"            \".tag\": \"update\",\n" +
+					"            \"update\": \"" + previousRev + "\"\n" +
+					"        },\n" +
+					"        \"autorename\": false,\n" +
+					"        \"mute\": false\n" +
+					"    }\n" +
+					"}";
+		}
+		WebResource.Builder request = this
+				.contentResource
+				.path("upload_session/finish")
+				.header("Dropbox-API-Arg", jsonEntity)
+				.type(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
+
+        return jerseyUtil.post(request,FolderEntry.class, 200);
     }
 
 	// --------------------------------------

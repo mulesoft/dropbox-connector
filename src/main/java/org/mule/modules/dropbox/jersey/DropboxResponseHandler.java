@@ -39,18 +39,23 @@ public class DropboxResponseHandler extends DefaultResponseHandler {
 		    throw new DropboxException(response);
 		}
         //If getEntity fails throw a ClientHandlerException.
+		DropboxException exception = null;
 		try{
-		    Error error = response.getEntity(Error.class);
-            throw new DropboxException(error);
-		}catch(ClientHandlerException e){
+//			Error error = response.getEntity(Error.class);
+			org.mule.modules.dropbox.model.version2.Error errorV2 = response.getEntity(org.mule.modules.dropbox.model.version2.Error.class);
+			Error error = new Error();
+			error.setError(errorV2.getErrorSummary());
+            exception = new DropboxException(error);
+		}catch(Exception e){
 		    //Try to get the entity as a String class in order to get the cause of the problem
 		    try{
 	            String errorMessage = response.getEntity(String.class);
-	            throw new DropboxException(errorMessage);
-	        }catch(ClientHandlerException e1){
+	            exception = new DropboxException(errorMessage);
+	        }catch(Exception e1){
 	            //If the getEntity fails we throw the exception hoping the response.toString() could help us to determine the error.
-	            throw new DropboxException(response);
+	            exception = new DropboxException(response);
 	        }
 		}
+		throw exception;
 	}
 }
