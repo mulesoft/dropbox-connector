@@ -13,6 +13,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.core.impl.provider.entity.FormMultivaluedMapProvider;
 import com.sun.jersey.core.impl.provider.entity.FormProvider;
@@ -109,7 +110,7 @@ public class DropboxConnector {
 
     private JerseyUtil jerseyUtil;
 
-    private JerseyUtil jerseyUtilUpload;
+    private JerseyUtil jerseyUtilContent;
 
     private WebResource apiResource;
 
@@ -134,6 +135,8 @@ public class DropboxConnector {
         Client contentClient = Client.create(clientConfig);
         contentClient.setChunkedEncodingSize(null);
 
+//		client.addFilter(new LoggingFilter(System.out));
+
         this.initJerseyUtil();
 
         this.apiResource = client.resource(this.server);
@@ -148,7 +151,7 @@ public class DropboxConnector {
                 .addRequestBehaviour(new AuthBuilderBehaviour(this)).setResponseHandler(DropboxResponseHandler.INSTANCE);
 
         this.jerseyUtil = builder.build();
-        this.jerseyUtilUpload = builderContent.build();
+        this.jerseyUtilContent = builderContent.build();
     }
 
     @OAuthAccessTokenIdentifier
@@ -376,7 +379,7 @@ public class DropboxConnector {
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
     public FullAccount getAccountV2() {
-		return this.jerseyUtil.post(
+		return this.jerseyUtilContent.post(
 				this.apiResource.path("users").path("get_current_account"), FullAccount.class, 200);
 	}
 
@@ -459,7 +462,7 @@ public class DropboxConnector {
 						.accept(MediaType.APPLICATION_JSON)
 						.type(MediaType.APPLICATION_OCTET_STREAM);
 
-                Chunk uploadedChunk = this.jerseyUtilUpload.put(request, Chunk.class, 200);
+                Chunk uploadedChunk = this.jerseyUtilContent.put(request, Chunk.class, 200);
 
                 // Set the uploadId after the first successful upload
                 if (uploadId == null && uploadedChunk != null) {

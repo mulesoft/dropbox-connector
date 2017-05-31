@@ -17,7 +17,9 @@ import org.mule.api.MuleException;
 import org.mule.commons.jersey.provider.GsonProvider;
 import org.mule.modules.dropbox.DropboxConnector;
 import org.mule.modules.dropbox.jersey.json.GsonFactory;
+import org.mule.modules.dropbox.model.AccountInformation;
 import org.mule.modules.dropbox.model.Item;
+import org.mule.modules.dropbox.model.version2.FullAccount;
 import org.mule.modules.dropbox.model.version2.ListFolderResult;
 
 import javax.ws.rs.core.MediaType;
@@ -56,6 +58,26 @@ public class DropbocConnectorApiV2Test {
         Item item = dropboxConnector.list("Nardoz");
         System.out.println(item.getContents().size());
         System.out.println(item.getContents().get(0).getRev());
+    }
+
+    @Test
+    public void getAccount() throws Exception {
+        /*
+        curl -X POST \
+          https://api.dropboxapi.com/2/users/get_current_account \
+          -H 'authorization: Bearer jpm5GaPXDLMAAAAAAAAANugi2p6jwgYLgixhUGLD6nhqOdn6UAZhrKjIJN8E3EqP'
+
+         */
+
+        DropboxConnector dropboxConnector = new DropboxConnector();
+        dropboxConnector.setAppKey(APP_KEY);
+        dropboxConnector.setAppSecret(APP_SECRET);
+        dropboxConnector.setAccessToken("jpm5GaPXDLMAAAAAAAAANugi2p6jwgYLgixhUGLD6nhqOdn6UAZhrKjIJN8E3EqP");
+        dropboxConnector.setServer(DropboxConnector.DEFAULT_SERVER);
+        dropboxConnector.setContentServer(DropboxConnector.DEFAULT_CONTENT_SERVER);
+        dropboxConnector.init();
+        FullAccount fullAccount = dropboxConnector.getAccountV2();
+        System.out.println(fullAccount);
     }
 
     @Test
