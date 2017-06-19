@@ -394,7 +394,7 @@ Original Code ("Original Developer"), in the hope that its promotional value may
 help justify the time, money and effort invested in writing the Original Code,
 the Original Developer may include in Exhibit B ("Attribution Information") a
 requirement that each time an Executable and Source Code or a Larger Work is
-launched or initially run (which includes initiating a session), a prominent
+launched or initially run (which includes initiating a sessionId), a prominent
 display of the Original Developer's Attribution Information (as defined below)
 must occur on the graphic user interface employed by the end user to access such
 Covered Code (which may include display on a splash screen), if any. The size

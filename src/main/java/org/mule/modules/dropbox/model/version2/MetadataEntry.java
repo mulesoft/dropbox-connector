@@ -2,12 +2,9 @@ package org.mule.modules.dropbox.model.version2;
 
 
 import com.google.gson.annotations.SerializedName;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.xml.bind.annotation.XmlElement;
 import java.util.List;
 
-public class FolderEntry {
+public class MetadataEntry {
 
     /*
     {
@@ -39,7 +36,7 @@ public class FolderEntry {
         "has_explicit_shared_members": false,
         "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
-     */
+    */
 
     @SerializedName(".tag")
     private String tag;

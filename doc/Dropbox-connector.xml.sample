@@ -19,6 +19,9 @@
 <!-- BEGIN_INCLUDE(dropbox:list) -->
     <dropbox:list path="foo/bar"/>
 <!-- END_INCLUDE(dropbox:list) -->
+<!-- BEGIN_INCLUDE(dropbox:get-metadata) -->
+    <dropbox:get-metadata path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:get-metadata) -->
 <!-- BEGIN_INCLUDE(dropbox:list-path) -->
     <dropbox:list-path path="foo/bar"/>
 <!-- END_INCLUDE(dropbox:list-path) -->

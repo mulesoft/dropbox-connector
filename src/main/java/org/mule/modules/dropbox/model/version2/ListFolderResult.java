@@ -1,7 +1,5 @@
 package org.mule.modules.dropbox.model.version2;
 
-import org.mule.modules.dropbox.model.version2.FolderEntry;
-
 import java.util.List;
 
 public class ListFolderResult {
@@ -70,7 +68,7 @@ public class ListFolderResult {
 
     private String cursor;
     private Boolean hasMore;
-    private List<FolderEntry> entries;
+    private List<MetadataEntry> entries;
 
     public String getCursor() {
         return cursor;
@@ -88,11 +86,11 @@ public class ListFolderResult {
         this.hasMore = hasMore;
     }
 
-    public List<FolderEntry> getEntries() {
+    public List<MetadataEntry> getEntries() {
         return entries;
     }
 
-    public void setEntries(List<FolderEntry> entries) {
+    public void setEntries(List<MetadataEntry> entries) {
         this.entries = entries;
     }
 }
