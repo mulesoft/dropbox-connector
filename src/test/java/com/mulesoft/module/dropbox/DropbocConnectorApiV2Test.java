@@ -21,8 +21,12 @@ import org.mule.modules.dropbox.model.AccountInformation;
 import org.mule.modules.dropbox.model.Item;
 import org.mule.modules.dropbox.model.version2.FullAccount;
 import org.mule.modules.dropbox.model.version2.ListFolderResult;
+import org.mule.modules.dropbox.model.version2.MetadataEntry;
 
 import javax.ws.rs.core.MediaType;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +62,10 @@ public class DropbocConnectorApiV2Test {
         Item item = dropboxConnector.list("Nardoz");
         System.out.println(item.getContents().size());
         System.out.println(item.getContents().get(0).getRev());
+
+        InputStream in = new FileInputStream(new File("/Users/marcosnunezcortes/mnc/repos/dropbox-connector/pom.xml"));
+        MetadataEntry a = dropboxConnector.uploadLongStreamV2(in, true, "Nardoz", "pp.txt");
+        System.out.println(a.getId());
     }
 
     @Test
@@ -115,6 +123,7 @@ public class DropbocConnectorApiV2Test {
 
         System.out.println(response.getStatus());
         System.out.println(response.getEntity(String.class));
+
     }
 
 }

@@ -536,7 +536,7 @@ public class DropboxConnector {
 					"{" +
 					"    \"cursor\": {" +
 					"        \"session_id\": \"" + uploadId + "\"," +
-					"        \"offset\": 0" +
+					"        \"offset\": " + readBytesAccum.toString() +
 					"    }," +
 					"    \"commit\": {" +
 					"        " + pathAsJson(path) + "," +
@@ -551,7 +551,7 @@ public class DropboxConnector {
 					"{" +
 					"    \"cursor\": {" +
 					"        \"session_id\": \"" + uploadId + "\"," +
-					"        \"offset\": 0" +
+					"        \"offset\": " + readBytesAccum.toString() +
 					"    }," +
 					"    \"commit\": {" +
 					"        " + pathAsJson(path) + "," +
