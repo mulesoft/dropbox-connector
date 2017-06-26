@@ -12,6 +12,7 @@ import com.sun.jersey.core.impl.provider.entity.FormProvider;
 import com.sun.jersey.core.impl.provider.entity.InputStreamProvider;
 import com.sun.jersey.core.impl.provider.entity.MimeMultipartProvider;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
+import org.apache.cxf.helpers.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mule.api.MuleException;
@@ -93,6 +94,15 @@ public class DropbocConnectorApiV2Test {
 
         MetadataEntry metadataEntry = dropboxConnector.getMetadataV2("Getting Started.pdf");
         System.out.println(metadataEntry);
+    }
+
+    @Test
+    public void download() throws Exception {
+
+        dropboxConnector.setAccessToken("jpm5GaPXDLMAAAAAAAAANugi2p6jwgYLgixhUGLD6nhqOdn6UAZhrKjIJN8E3EqP");
+
+        InputStream inputStream = dropboxConnector.downloadFileV2("Getting Started.pdf");
+        System.out.println(IOUtils.readStringFromStream(inputStream));
     }
 
     @Test

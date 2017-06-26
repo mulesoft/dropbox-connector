@@ -49,9 +49,6 @@ import org.mule.modules.dropbox.model.version2.request.*;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 import static org.mule.modules.dropbox.utils.Utils.*;
 
@@ -188,8 +185,6 @@ public class DropboxConnector {
 	@OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
 	public Item delete(String path) throws Exception {
-//        return this.jerseyUtil.post(
-//                this.apiResource.path("fileops").path("delete").queryParam("root", ROOT_PARAM).queryParam("path", path), Item.class, 200);
 		return getItemFromMetadataEntry(deleteV2(path));
 	}
 
@@ -197,24 +192,14 @@ public class DropboxConnector {
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
 	public MetadataEntry deleteV2(String path) {
-		String jsonEntity = "{"+pathAsJson(path)+"}";
 		return this.jerseyUtil.post(
 				this.apiResource
 						.path("files").path("delete")
 						.type(MediaType.APPLICATION_JSON_TYPE)
-						.entity(jsonAsMap(jsonEntity)),
+						.entity(new FileRequest(path)),
 				MetadataEntry.class,
 				200
 		);
-	}
-
-	private Map<String, Object> jsonAsMap(String json) {
-	    return new Gson().fromJson(json, Map.class);
-    }
-
-	private String pathAsJson(String path) {
-//        return "\"path\": \"/dropbox/" + adaptPath(path) + "\"";
-        return "\"path\": \"" + adaptPath(path) + "\"";
 	}
 
 	/**
@@ -237,11 +222,6 @@ public class DropboxConnector {
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
     public InputStream downloadFile(String path,
 			@Optional @Default("false") boolean delete) throws Exception {
-
-//        InputStream response = this.jerseyUtil.get(this.contentResource
-//                                                            .path("files")
-//                                                            .path(ROOT_PARAM)
-//                                                            .path(adaptPath(path)), InputStream.class, 200);
 		InputStream response = downloadFileV2(path);
 		if (delete)
 			this.delete(path);
@@ -253,11 +233,10 @@ public class DropboxConnector {
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
     public InputStream downloadFileV2(String path) {
-		String jsonEntity = "{"+pathAsJson(path)+"}";
 		return this.jerseyUtilContent.post(
 				this.contentResource
 						.path("files").path("download")
-						.header("Dropbox-API-Arg", jsonEntity),
+						.header("Dropbox-API-Arg", toJson(new FileRequest(path))),
 				InputStream.class,
 				200
 		);
@@ -279,9 +258,6 @@ public class DropboxConnector {
 	@OAuthProtected
 	@OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
 	public Item getMetadata(String path) throws Exception {
-//		final String apiPath = adaptPath(path);
-//        return this.jerseyUtil.get(
-//                this.apiResource.path("metadata").path("dropbox").path(apiPath), Item.class, 200);
 		return getItemFromMetadataEntry(getMetadataV2(path));
 	}
 
@@ -315,20 +291,7 @@ public class DropboxConnector {
 	@OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
 	public Item list(String path) throws Exception {
-//		final String apiPath = adaptPath(path);
-//        return this.jerseyUtil.get(
-//                this.apiResource.path("metadata").path("dropbox").path(apiPath), Item.class, 200);
 		return getItemFromListFolderResult(listV2(path));
-	}
-
-	private Item getItemFromListFolderResult(ListFolderResult listFolderResult) {
-		List<Item> items = new LinkedList<Item>();
-		for(MetadataEntry metadataEntry : listFolderResult.getEntries()) {
-			items.add(getItemFromMetadataEntry(metadataEntry));
-		}
-		Item item = new Item();
-		item.setContents(items);
-		return item;
 	}
 
     @Processor
@@ -358,20 +321,8 @@ public class DropboxConnector {
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
     public AccountInformation getAccount() throws Exception {
-//        return this.jerseyUtil.get(
-//                this.apiResource.path("account").path("info"), AccountInformation.class, 200);
 		return getAccountInformationFromFullAccount(getAccountV2());
     }
-
-    private AccountInformation getAccountInformationFromFullAccount(FullAccount fullAccount) {
-    	AccountInformation accountInformation = new AccountInformation();
-    	accountInformation.setUid(fullAccount.getAccountId());
-    	accountInformation.setCountry(fullAccount.getCountry());
-    	accountInformation.setDisplayName(fullAccount.getName().getDisplayName());
-    	accountInformation.setEmail(fullAccount.getEmail());
-    	accountInformation.setReferalLink(fullAccount.getReferralLink());
-    	return accountInformation;
-	}
 
     @Processor
     @OAuthProtected
