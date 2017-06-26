@@ -37,3 +37,22 @@
 <!-- BEGIN_INCLUDE(dropbox:get-account) -->
      <dropbox:get-account/>
 <!-- END_INCLUDE(dropbox:get-account) -->
+
+<!-- BEGIN_INCLUDE(dropbox:upload-long-stream-v2) -->
+    <dropbox:upload-long-stream-v2 path="foo/bar" filename="test.txt"/>
+<!-- END_INCLUDE(dropbox:upload-long-stream-v2) -->
+<!-- BEGIN_INCLUDE(dropbox:delete-v2) -->
+    <dropbox:delete-v2 path="foo/bar/test.txt"/>
+<!-- END_INCLUDE(dropbox:delete-v2) -->
+<!-- BEGIN_INCLUDE(dropbox:download-file-v2) -->
+    <dropbox:download-file-v2 path="foo/bar/test.txt"/>
+<!-- END_INCLUDE(dropbox:download-file-v2) -->
+<!-- BEGIN_INCLUDE(dropbox:list-v2) -->
+    <dropbox:list-v2 path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:list-v2) -->
+<!-- BEGIN_INCLUDE(dropbox:get-metadata-v2) -->
+    <dropbox:get-metadata-v2 path="foo/bar"/>
+<!-- END_INCLUDE(dropbox:get-metadata-v2) -->
+<!-- BEGIN_INCLUDE(dropbox:get-account-v2) -->
+     <dropbox:get-account-v2/>
+<!-- END_INCLUDE(dropbox:get-account-v2) -->

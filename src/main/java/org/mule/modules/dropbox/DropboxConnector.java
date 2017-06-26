@@ -9,7 +9,6 @@
 package org.mule.modules.dropbox;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
@@ -133,8 +132,8 @@ public class DropboxConnector {
         Client contentClient = Client.create(clientConfig);
         contentClient.setChunkedEncodingSize(null);
 
-		client.addFilter(new LoggingFilter(System.out));
-		contentClient.addFilter(new LoggingFilter(System.out));
+//		client.addFilter(new LoggingFilter(System.out));
+//		contentClient.addFilter(new LoggingFilter(System.out));
 
         this.initJerseyUtil();
 
@@ -188,6 +187,18 @@ public class DropboxConnector {
 		return getItemFromMetadataEntry(deleteV2(path));
 	}
 
+	/**
+	 * Deletes a file or folder.
+	 *
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:delete-v2}
+	 *
+	 * @param path
+	 *            full path to the file to be deleted
+	 *
+	 * @return Item with the metadata of the deleted object
+	 * @throws Exception
+	 *             exception
+	 */
     @Processor
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
@@ -229,6 +240,18 @@ public class DropboxConnector {
 		return response;
 	}
 
+	/**
+	 * Downloads a file from Dropbox
+	 *
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:download-file-v2}
+	 *
+	 * @param path
+	 *            path to the file
+	 *
+	 * @return Stream containing the downloaded file data
+	 * @throws Exception
+	 *             exception
+	 */
     @Processor
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
@@ -261,6 +284,18 @@ public class DropboxConnector {
 		return getItemFromMetadataEntry(getMetadataV2(path));
 	}
 
+	/**
+	 * Lists the metadata of a file or directory
+	 *
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:get-metadata-v2}
+	 *
+	 * @param path
+	 *            path to the file or directory
+	 *
+	 * @return Metadata of file or directory
+	 * @throws Exception
+	 *             exception
+	 */
 	@Processor
 	@OAuthProtected
 	@OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
@@ -294,6 +329,18 @@ public class DropboxConnector {
 		return getItemFromListFolderResult(listV2(path));
 	}
 
+	/**
+	 * Lists the content of the remote directory
+	 *
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:list-v2}
+	 *
+	 * @param path
+	 *            path to the remote directory
+	 *
+	 * @return List of files and/or folders
+	 * @throws Exception
+	 *             exception
+	 */
     @Processor
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
@@ -324,6 +371,15 @@ public class DropboxConnector {
 		return getAccountInformationFromFullAccount(getAccountV2());
     }
 
+	/**
+	 * Requests the account's information.
+	 *
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:get-account-v2}
+	 *
+	 * @return AccountInformation. A Dropbox account's information.
+	 *
+	 * @throws Exception exception
+	 */
     @Processor
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
@@ -364,6 +420,27 @@ public class DropboxConnector {
         return getItemFromMetadataEntry(uploadLongStreamV2(fileData, overwrite, path, filename));
     }
 
+	/**
+	 * Upload file to Dropbox. The payload is an InputStream containing bytes of
+	 * the data to be uploaded.
+	 *
+	 * This version of the method supports streams of arbitrary length
+	 *
+	 * {@sample.xml ../../../doc/Dropbox-connector.xml.sample dropbox:upload-long-stream-v2}
+	 *
+	 * @param fileData
+	 *            file to be uploaded
+	 * @param overwrite
+	 * 				overwrite file in case it already exists
+	 * @param path
+	 *            The destination path
+	 * @param filename
+	 *            The destination file name
+	 *
+	 * @return Item with the metadata of the uploaded object
+	 * @throws Exception
+	 *             exception
+	 */
     @SuppressWarnings("resource")
     @Processor
     @OAuthProtected
