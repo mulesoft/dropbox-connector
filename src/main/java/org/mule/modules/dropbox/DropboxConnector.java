@@ -345,7 +345,9 @@ public class DropboxConnector {
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
     public ListFolderResult listV2(String path) throws Exception {
-        return this.jerseyUtil.post(
+		ListFolderResult finalResult = new ListFolderResult();
+
+		ListFolderResult listFolderResult = this.jerseyUtil.post(
 				this.apiResource
 						.path("files").path("list_folder")
 						.type(MediaType.APPLICATION_JSON_TYPE)
@@ -353,6 +355,22 @@ public class DropboxConnector {
 				ListFolderResult.class,
 				200
 		);
+
+		finalResult.setEntries(listFolderResult.getEntries());
+
+		while(listFolderResult.getHasMore()) {
+			listFolderResult = this.jerseyUtil.post(
+					this.apiResource
+							.path("files").path("list_folder").path("continue")
+							.type(MediaType.APPLICATION_JSON_TYPE)
+							.entity(new ListFolderContinueRequest(listFolderResult.getCursor())),
+					ListFolderResult.class,
+					200
+			);
+			finalResult.getEntries().addAll(listFolderResult.getEntries());
+		}
+
+		return finalResult;
 	}
 
     /**

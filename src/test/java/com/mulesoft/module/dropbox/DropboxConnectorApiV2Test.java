@@ -15,24 +15,20 @@ import com.sun.jersey.multipart.impl.MultiPartWriter;
 import org.apache.cxf.helpers.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mule.api.MuleException;
 import org.mule.commons.jersey.provider.GsonProvider;
 import org.mule.modules.dropbox.DropboxConnector;
 import org.mule.modules.dropbox.jersey.json.GsonFactory;
 import org.mule.modules.dropbox.model.AccountInformation;
 import org.mule.modules.dropbox.model.Item;
-import org.mule.modules.dropbox.model.version2.FullAccount;
 import org.mule.modules.dropbox.model.version2.ListFolderResult;
 import org.mule.modules.dropbox.model.version2.MetadataEntry;
+import org.mule.modules.dropbox.utils.Utils;
 
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 
-public class DropbocConnectorApiV2Test {
+public class DropboxConnectorApiV2Test {
 
     private static final String APP_NAME     = "Mule-DBX-Connector-Test-MNC";
     private static final String APP_KEY      = "cbmsa3s2ocuty8n";
@@ -69,6 +65,15 @@ public class DropbocConnectorApiV2Test {
     }
 
     @Test
+    public void list() throws Exception {
+
+        dropboxConnector.setAccessToken("_6Hh5ToI-uoAAAAAAAAAbzkFDA0sg8J9eTPkbIS7AaWhQhpGWahmQI3UJ4Z9qUv-");
+
+        Item item = dropboxConnector.list("");
+        System.out.println(Utils.toJson(item.getContents()));
+    }
+
+    @Test
     public void uploadFile() throws Exception {
 
         dropboxConnector.setAccessToken("jpm5GaPXDLMAAAAAAAAANugi2p6jwgYLgixhUGLD6nhqOdn6UAZhrKjIJN8E3EqP");
@@ -83,7 +88,7 @@ public class DropbocConnectorApiV2Test {
 
         dropboxConnector.setAccessToken("jpm5GaPXDLMAAAAAAAAANugi2p6jwgYLgixhUGLD6nhqOdn6UAZhrKjIJN8E3EqP");
 
-        FullAccount fullAccount = dropboxConnector.getAccountV2();
+        AccountInformation fullAccount = dropboxConnector.getAccount();
         System.out.println(fullAccount);
     }
 
@@ -92,7 +97,7 @@ public class DropbocConnectorApiV2Test {
 
         dropboxConnector.setAccessToken("jpm5GaPXDLMAAAAAAAAANugi2p6jwgYLgixhUGLD6nhqOdn6UAZhrKjIJN8E3EqP");
 
-        MetadataEntry metadataEntry = dropboxConnector.getMetadataV2("Getting Started.pdf");
+        Item metadataEntry = dropboxConnector.getMetadata("Getting Started.pdf");
         System.out.println(metadataEntry);
     }
 

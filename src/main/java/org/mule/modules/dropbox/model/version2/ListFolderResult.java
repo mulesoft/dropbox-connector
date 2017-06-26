@@ -67,7 +67,7 @@ public class ListFolderResult {
      */
 
     private String cursor;
-    private Boolean hasMore;
+    private boolean hasMore;
     private List<MetadataEntry> entries;
 
     public String getCursor() {
@@ -78,11 +78,11 @@ public class ListFolderResult {
         this.cursor = cursor;
     }
 
-    public Boolean getHasMore() {
+    public boolean getHasMore() {
         return hasMore;
     }
 
-    public void setHasMore(Boolean hasMore) {
+    public void setHasMore(boolean hasMore) {
         this.hasMore = hasMore;
     }
 
