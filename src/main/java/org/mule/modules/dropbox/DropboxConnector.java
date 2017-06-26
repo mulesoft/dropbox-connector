@@ -8,6 +8,7 @@
 
 package org.mule.modules.dropbox;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
@@ -42,10 +43,8 @@ import org.mule.modules.dropbox.jersey.MediaTypesBuilderBehaviour;
 import org.mule.modules.dropbox.jersey.json.GsonFactory;
 import org.mule.modules.dropbox.model.AccountInformation;
 import org.mule.modules.dropbox.model.Item;
-import org.mule.modules.dropbox.model.version2.MetadataEntry;
-import org.mule.modules.dropbox.model.version2.FullAccount;
-import org.mule.modules.dropbox.model.version2.ListFolderResult;
-import org.mule.modules.dropbox.model.version2.UploadSession;
+import org.mule.modules.dropbox.model.version2.*;
+import org.mule.modules.dropbox.model.version2.request.*;
 
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
@@ -53,6 +52,8 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static org.mule.modules.dropbox.utils.Utils.*;
 
 /**
  * Dropbox Cloud Connector.
@@ -262,7 +263,6 @@ public class DropboxConnector {
 		);
 	}
 
-
 	/**
 	 * Lists the metadata of a file or directory
 	 *
@@ -289,18 +289,11 @@ public class DropboxConnector {
 	@OAuthProtected
 	@OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
 	public MetadataEntry getMetadataV2(String path) throws Exception {
-		String jsonEntity =
-						"{" +
-						"    " +pathAsJson(path)+ "," +
-						"    \"include_media_info\": false," +
-						"    \"include_deleted\": false," +
-						"    \"include_has_explicit_shared_members\": false" +
-						"}";
 		return this.jerseyUtil.post(
 				this.apiResource
 						.path("files").path("get_metadata")
 						.type(MediaType.APPLICATION_JSON_TYPE)
-						.entity(jsonAsMap(jsonEntity)),
+						.entity(new MetadataRequest(path)),
 				MetadataEntry.class,
 				200
 		);
@@ -338,58 +331,19 @@ public class DropboxConnector {
 		return item;
 	}
 
-	private Item getItemFromMetadataEntry(MetadataEntry metadataEntry) {
-/*
-            "size": "225.4KB",
-            "rev": "35e97029684fe",
-            "hash": "35e97029684fe",
-            "thumb_exists": false,
-            "bytes": 230783,
-            "modified": "Tue, 19 Jul 2011 21:55:38 +0000",
-            "client_mtime": "Mon, 18 Jul 2011 18:04:35 +0000",
-            "path": "/Getting_Started.pdf",
-            "is_dir": false,
-            "is_deleted": false,
-            "icon": "page_white_acrobat",
-            "root": "dropbox",
-            "mime_type": "application/pdf",
-            "revision": 220823
- */
-		Item item = new Item();
-		item.setSize(String.valueOf(metadataEntry.getSize()));
-		item.setRev(metadataEntry.getRev());
-		item.setHash(metadataEntry.getContentHash());
-		item.setBytes(metadataEntry.getSize());
-		item.setModified(metadataEntry.getServerModified());
-		item.setClientMtime(metadataEntry.getClientModified());
-		item.setPath(metadataEntry.getPathLower());
-		item.setDir(metadataEntry.getType()== MetadataEntry.Type.folder);
-		item.setDeleted(metadataEntry.getType()== MetadataEntry.Type.deleted);
-		return item;
-	}
-
     @Processor
     @OAuthProtected
     @OAuthInvalidateAccessTokenOn(exception = DropboxTokenExpiredException.class)
     public ListFolderResult listV2(String path) throws Exception {
-		String jsonEntity =
-				"{" +
-				"    " +pathAsJson(path)+ "," +
-				"    \"recursive\": false," +
-				"    \"include_media_info\": false," +
-				"    \"include_deleted\": false," +
-				"    \"include_has_explicit_shared_members\": false" +
-				"}";
         return this.jerseyUtil.post(
 				this.apiResource
 						.path("files").path("list_folder")
 						.type(MediaType.APPLICATION_JSON_TYPE)
-						.entity(jsonAsMap(jsonEntity)),
+						.entity(new ListFolderRequest(path)),
 				ListFolderResult.class,
 				200
 		);
 	}
-
 
     /**
      * Requests the account's information.
@@ -426,7 +380,6 @@ public class DropboxConnector {
 		return this.jerseyUtilContent.post(
 				this.apiResource.path("users").path("get_current_account"), FullAccount.class, 200);
 	}
-
 
     /**
      * Upload file to Dropbox. The payload is an InputStream containing bytes of
@@ -486,22 +439,14 @@ public class DropboxConnector {
 							.contentResource
 							.path("files")
 							.path("upload_session/start")
-							.header("Dropbox-API-Arg", "{\"close\": false}")
+							.header("Dropbox-API-Arg", toJson(new UploadStartHeader()))
 							.type(MediaType.APPLICATION_OCTET_STREAM);
 				} else {
-					String jsonEntity =
-							"{" +
-							"    \"cursor\": {" +
-							"        \"session_id\": \"" + uploadId + "\"," +
-							"        \"offset\": " + readBytesAccum.toString() +
-							"    }," +
-							"    \"close\": false" +
-							"}";
 					request = this
 							.contentResource
 							.path("files")
 							.path("upload_session/append_v2")
-							.header("Dropbox-API-Arg", jsonEntity);
+							.header("Dropbox-API-Arg", toJson(new UploadAppendHeader(new Cursor(uploadId, readBytesAccum))));
 				}
 				request
 						.entity(chunk)
@@ -529,46 +474,19 @@ public class DropboxConnector {
 			// file was not found
 		}
 
-		String jsonEntity = null;
+		Commit commit = null;
 		if (previousRev==null || !overwrite) {
 			// Add
-			jsonEntity =
-					"{" +
-					"    \"cursor\": {" +
-					"        \"session_id\": \"" + uploadId + "\"," +
-					"        \"offset\": " + readBytesAccum.toString() +
-					"    }," +
-					"    \"commit\": {" +
-					"        " + pathAsJson(path) + "," +
-					"        \"mode\": \"add\"," +
-					"        \"autorename\": true," +
-					"        \"mute\": false" +
-					"    }" +
-					"}";
+			commit = new Commit(path);
 		} else {
 			// Update
-			jsonEntity =
-					"{" +
-					"    \"cursor\": {" +
-					"        \"session_id\": \"" + uploadId + "\"," +
-					"        \"offset\": " + readBytesAccum.toString() +
-					"    }," +
-					"    \"commit\": {" +
-					"        " + pathAsJson(path) + "," +
-					"        \"mode\": {" +
-					"            \".tag\": \"update\"," +
-					"            \"update\": \"" + previousRev + "\"" +
-					"        }," +
-					"        \"autorename\": false," +
-					"        \"mute\": false" +
-					"    }" +
-					"}";
+			commit = new Commit(path, ImmutableMap.of(".tag", "update", "update", previousRev), false);
 		}
 		WebResource.Builder request = this
 				.contentResource
 				.path("files")
 				.path("upload_session/finish")
-				.header("Dropbox-API-Arg", jsonEntity)
+				.header("Dropbox-API-Arg", toJson(new UploadFinishHeader(new Cursor(uploadId, readBytesAccum), commit)))
 				.type(MediaType.APPLICATION_OCTET_STREAM)
 				.accept(MediaType.APPLICATION_JSON);
 
@@ -616,13 +534,4 @@ public class DropboxConnector {
 		this.accessToken = accessToken;
 	}
 
-	private String adaptPath(String path) {
-		path = StringUtils.trim(path);
-		if(StringUtils.isBlank(path) || StringUtils.equals(path, "/"))
-			return "";
-		if(!StringUtils.startsWith(path, "/")) {
-			return "/" + path;
-		}
-		return path;
-	}
 }
