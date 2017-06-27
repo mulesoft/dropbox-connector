@@ -26,7 +26,7 @@ public class Utils {
         item.setBytes(metadataEntry.getSize());
         item.setModified(metadataEntry.getServerModified());
         item.setClientMtime(metadataEntry.getClientModified());
-        item.setPath(metadataEntry.getPathLower());
+        item.setPath(metadataEntry.getPathDisplay());
         item.setDir(metadataEntry.getType()== MetadataEntry.Type.folder);
         item.setDeleted(metadataEntry.getType()== MetadataEntry.Type.deleted);
         return item;

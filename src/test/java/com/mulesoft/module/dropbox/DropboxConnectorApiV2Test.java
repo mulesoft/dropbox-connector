@@ -14,6 +14,7 @@ import com.sun.jersey.core.impl.provider.entity.MimeMultipartProvider;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 import org.apache.cxf.helpers.IOUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mule.commons.jersey.provider.GsonProvider;
 import org.mule.modules.dropbox.DropboxConnector;
@@ -27,7 +28,7 @@ import org.mule.modules.dropbox.utils.Utils;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.Map;
-
+@Ignore
 public class DropboxConnectorApiV2Test {
 
     private static final String APP_NAME     = "Mule-DBX-Connector-Test-MNC";
