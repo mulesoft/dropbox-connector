@@ -435,7 +435,7 @@ public class DropboxConnector {
                                  @Optional @Default("true") Boolean overwrite,
                                  String path,
                                  String filename) throws Exception {
-        return getItemFromMetadataEntry(uploadLongStreamV2(fileData, overwrite, path, filename));
+		return fileData.available() > 0 ? getItemFromMetadataEntry(uploadLongStreamV2(fileData, overwrite, path, filename)) : null;
     }
 
 	/**
