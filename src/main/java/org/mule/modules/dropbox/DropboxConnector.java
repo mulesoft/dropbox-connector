@@ -43,6 +43,7 @@ import org.mule.modules.dropbox.jersey.json.GsonFactory;
 import org.mule.modules.dropbox.model.AccountInformation;
 import org.mule.modules.dropbox.model.Item;
 import org.mule.modules.dropbox.model.version2.*;
+import org.mule.modules.dropbox.model.version2.oauthparam.DropboxOAuthTokenAccessParamType;
 import org.mule.modules.dropbox.model.version2.request.*;
 
 import javax.ws.rs.core.MediaType;
@@ -62,7 +63,14 @@ import static org.mule.modules.dropbox.utils.Utils.*;
 		accessTokenUrl = "https://api.dropbox.com/oauth2/token",
         accessTokenRegex = "\"access_token\"[ ]*:[ ]*\"([^\\\"]*)\"",
         expirationRegex = "\"expires_in\"[ ]*:[ ]*([\\d]*)",
-        refreshTokenRegex = "\"refresh_token\"[ ]*:[ ]*\"([^\\\"]*)\"")
+        refreshTokenRegex = "\"refresh_token\"[ ]*:[ ]*\"([^\\\"]*)\"",
+		authorizationParameters = {
+				@OAuthAuthorizationParameter(name = "token_access_type", defaultValue = "offline", type = DropboxOAuthTokenAccessParamType.class,
+						description = "If this parameter is set to offline, then the access token payload returned by a successful /oauth2/token call " +
+								"will contain a short-lived access_token and a long-lived refresh_token that can be used to request a new short-lived access token as long as a user's approval remains valid. " +
+								"If set to online then only a short-lived access_token will be returned. If omitted, the response will default to returning a long-lived access_token if they are allowed in the app console. " +
+								"If long-lived access tokens are disabled in the app console, this parameter defaults to online", optional = true)
+		})
 public class DropboxConnector {
     private static final String ROOT_PARAM = "dropbox";
 
