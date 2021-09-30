@@ -49,6 +49,8 @@ import org.mule.modules.dropbox.model.version2.request.*;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.mule.modules.dropbox.utils.Utils.*;
 
@@ -80,6 +82,7 @@ public class DropboxConnector {
 
     private String accessTokenIdentifier;
 
+	static Logger logger = Logger.getLogger(DropboxConnector.class.getName());
 	/**                        `
 	 * URL of the Dropbox server API
 	 */
@@ -142,7 +145,7 @@ public class DropboxConnector {
 
 //		client.addFilter(new LoggingFilter(System.out));
 //		contentClient.addFilter(new LoggingFilter(System.out));
-
+		logger.log(Level.INFO, "Dropbox Connector 3.3.6-DL");
         this.initJerseyUtil();
 
         this.apiResource = client.resource(this.server);
